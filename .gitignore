@@ -1,0 +1,12 @@
+CMakeFiles/
+MCImporter.dir/
+Release/
+DEBUG/
+*.vcxproj
+*.filters
+*.sln
+*.user
+*.cmake
+build/ 
+.vs/
+out/
