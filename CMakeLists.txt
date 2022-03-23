@@ -6,18 +6,38 @@
 
 #set(ISOLATED_BUILD TRUE)
 
+#SET(NPL_RUNTIME_DEV TRUE)
 set(NPL_RUNTIME_ROOT ${PROJECT_SOURCE_DIR})
 if (ISOLATED_BUILD) 
     cmake_minimum_required(VERSION 3.14.5)
 
+
     set(NPL_RUNTIME_ROOT "D:/workspace/npl/WinNPLRuntime/NPLRuntime")
+    set(NPL_RUNTIME_ROOT "D:/workspace/npl/WinNPLRuntime/Client/trunk/ParaEngineClient")
     set(BOOST_ROOT ${NPL_RUNTIME_ROOT}/externals/boost/prebuild/src/boost_1_73_0)
 else()
-    include(${PROJECT_SOURCE_DIR}/cmake/ucm.cmake)
-    include(${PROJECT_SOURCE_DIR}/cmake/ConfigBoost.cmake)
+    #include(${PROJECT_SOURCE_DIR}/cmake/ucm.cmake)
+    #include(${PROJECT_SOURCE_DIR}/cmake/ConfigBoost.cmake)
 
     #message(STATUS "BOOST_INCLUDE_DIR:" ${Boost_INCLUDE_DIR})
     #message(STATUS "BOOST_LIBS:" ${Boost_LIBRARIES} )
+    set(BOOST_ROOT D:/ProgramData/Lib/boost_1_78_0)
+    set(BOOST_LIBRARYDIR D:/ProgramData/Lib/boost_1_78_0/stage/lib)
+    set(Boost_USE_MULTITHREADED ON)
+    set(Boost_USE_STATIC_LIBS   ON)
+    set(Boost_DEBUG on)
+
+    if (MSVC)
+        set(Boost_USE_STATIC_RUNTIME ON)
+    else()
+        set(Boost_USE_STATIC_RUNTIME OFF)
+    endif()
+
+    # Add more boost components here
+    find_package(Boost 1.78 REQUIRED COMPONENTS filesystem iostreams zlib) 
+	if (NPL_RUNTIME_DEV)
+		set(NPL_RUNTIME_ROOT "${CLIENT_SOURCE_DIR}/trunk/ParaEngineClient")
+	endif()
 endif ()
 
 project (MCImporter)
@@ -47,8 +67,13 @@ list(APPEND MCImporter_SRCS ${MC_FILES})
 
 # add the binary tree to the search path for include files
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-include_directories("${NPL_RUNTIME_ROOT}/ParaEngine/Core")
-include_directories("${NPL_RUNTIME_ROOT}/ParaEngine/Framework/Interface")
+if (NPL_RUNTIME_DEV)
+	include_directories("${NPL_RUNTIME_ROOT}/Core")
+else ()
+	# cp_old
+	include_directories("${NPL_RUNTIME_ROOT}/ParaEngine/Core")
+	include_directories("${NPL_RUNTIME_ROOT}/ParaEngine/Framework/Interface")
+endif()
 include_directories("${BOOST_ROOT}")
 
 IF(MSVC)
@@ -92,8 +117,6 @@ if (ISOLATED_BUILD)
 else() 
 	target_link_libraries(MCImporter Ws2_32.lib ${Boost_LIBRARIES})
 endif() 
-
-
 
 IF(WIN32)
 	ADD_DEFINITIONS(-DWNT)
