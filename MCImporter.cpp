@@ -178,19 +178,19 @@ bool MCImporter::LoadWorld( const std::string& sFolderName )
 {
 	if(m_world.load(sFolderName))
 	{
-		m_world_cache = std::unique_ptr<mc::WorldCache>(new mc::WorldCache(m_world));
-		//p_world_cache = new mc::WorldCache(m_world);
+		m_world_cache = std::unique_ptr<mc_map::WorldCache>(new mc_map::WorldCache(m_world));
+		//p_world_cache = new mc_map::WorldCache(m_world);
 		return true;
 	}
 	return false;
 }
 
-uint16_t MCImporter::getBlock( const mc::BlockPos& pos, mc::Chunk* chunk ) const
+uint16_t MCImporter::getBlock( const mc_map::BlockPos& pos, mc_map::Chunk* chunk ) const
 {
 	if (pos.y < 0)
 		return 0;
-	mc::ChunkPos chunk_pos(pos);
-	mc::Chunk* mychunk = chunk;
+	mc_map::ChunkPos chunk_pos(pos);
+	mc_map::Chunk* mychunk = chunk;
 	if (chunk == NULL || chunk_pos != chunk->getPos())
 		mychunk = m_world_cache->getChunk(chunk_pos);
 	// chunk may be NULL
@@ -198,7 +198,7 @@ uint16_t MCImporter::getBlock( const mc::BlockPos& pos, mc::Chunk* chunk ) const
 		return 0;
 		// otherwise get id and data
 	} else {
-		mc::LocalBlockPos local(pos);
+		mc_map::LocalBlockPos local(pos);
 		uint16_t id = mychunk->getBlockID(local);
 		// assume that air does not have any data
 		if (id == 0)
@@ -210,15 +210,15 @@ uint16_t MCImporter::getBlock( const mc::BlockPos& pos, mc::Chunk* chunk ) const
 /** TODO: this function is not correct. 
 block that is surrounded by non-opache blocks may be wrongly removed. 
 */
-bool MCImporter::isOccludedBlock( const mc::BlockPos& pos, mc::Chunk* chunk, uint16_t id ) const
+bool MCImporter::isOccludedBlock( const mc_map::BlockPos& pos, mc_map::Chunk* chunk, uint16_t id ) const
 {
 	// uint16_t north, south, east, west, top, bottom;
-	if( !MCBlock::IsSolidBlock(getBlock(pos + mc::DIR_TOP, chunk)) ||
-		!MCBlock::IsSolidBlock(getBlock(pos + mc::DIR_BOTTOM, chunk)) ||
-		!MCBlock::IsSolidBlock(getBlock(pos + mc::DIR_NORTH, chunk)) || 
-		!MCBlock::IsSolidBlock(getBlock(pos + mc::DIR_SOUTH, chunk)) ||
-		!MCBlock::IsSolidBlock(getBlock(pos + mc::DIR_EAST, chunk)) ||
-		!MCBlock::IsSolidBlock(getBlock(pos + mc::DIR_WEST, chunk)))
+	if( !MCBlock::IsSolidBlock(getBlock(pos + mc_map::DIR_TOP, chunk)) ||
+		!MCBlock::IsSolidBlock(getBlock(pos + mc_map::DIR_BOTTOM, chunk)) ||
+		!MCBlock::IsSolidBlock(getBlock(pos + mc_map::DIR_NORTH, chunk)) || 
+		!MCBlock::IsSolidBlock(getBlock(pos + mc_map::DIR_SOUTH, chunk)) ||
+		!MCBlock::IsSolidBlock(getBlock(pos + mc_map::DIR_EAST, chunk)) ||
+		!MCBlock::IsSolidBlock(getBlock(pos + mc_map::DIR_WEST, chunk)))
 	{
 		return false;
 	}
@@ -584,8 +584,8 @@ bool LoadMCWorld(const std::string& sFolderName)
 	{
 		if (mc_importer.m_world.load(sFolderName))
 		{
-			mc_importer.m_world_cache = std::unique_ptr<mc::WorldCache>(new mc::WorldCache(mc_importer.m_world));
-			//mc_importer.p_world_cache = new mc::WorldCache(mc_importer.m_world);
+			mc_importer.m_world_cache = std::unique_ptr<mc_map::WorldCache>(new mc_map::WorldCache(mc_importer.m_world));
+			//mc_importer.p_world_cache = new mc_map::WorldCache(mc_importer.m_world);
 			mc_importer.initOffsetRegionPos();
 			return true;
 		}
@@ -601,7 +601,7 @@ bool GetRegionBlocks(int regionX, int regionZ, std::vector<int> *blocks)
 
 	int mcRegionX = regionX + mc_importer.offsetRegionX;
 	int mcRegionZ = regionZ + mc_importer.offsetRegionZ;
-	mc::RegionFile* region = mc_importer.m_world_cache->getRegion(mc::RegionPos(mcRegionX,mcRegionZ));
+	mc_map::RegionFile* region = mc_importer.m_world_cache->getRegion(mc_map::RegionPos(mcRegionX,mcRegionZ));
 	if (!region){
 		return false;
 	}
@@ -614,8 +614,8 @@ bool GetRegionBlocks(int regionX, int regionZ, std::vector<int> *blocks)
 	// go through all chunks in the region
 	for (auto chunk_it = region_chunks.begin(); chunk_it != region_chunks.end(); ++chunk_it)
 	{
-		const mc::ChunkPos& chuck_pos = *chunk_it;
-		mc::Chunk* mychunk = mc_importer.m_world_cache->getChunk(chuck_pos);
+		const mc_map::ChunkPos& chuck_pos = *chunk_it;
+		mc_map::Chunk* mychunk = mc_importer.m_world_cache->getChunk(chuck_pos);
 		if (mychunk)
 		{
 			for (int x = 0; x < 16; ++x)
@@ -624,7 +624,7 @@ bool GetRegionBlocks(int regionX, int regionZ, std::vector<int> *blocks)
 				{
 					for (int y = min_y; y < max_y; ++y)
 					{
-						mc::LocalBlockPos pos(x, z, y);
+						mc_map::LocalBlockPos pos(x, z, y);
 						uint16_t block_id = mychunk->getBlockID(pos);
 						if (block_id != 0)
 						//if (block_id == 53)
@@ -672,8 +672,8 @@ bool GetChunkBlocks(int chunkX, int chunkZ, std::vector<int> *blocks)
 	int mcChunkZ = chunkZ;
 	mc_importer.TranslateParacraftChunkPos(mcChunkX,mcChunkZ);
 
-	const mc::ChunkPos chuck_pos(mcChunkX, mcChunkZ);
-	mc::Chunk* mychunk = mc_importer.m_world_cache->getChunk(chuck_pos);
+	const mc_map::ChunkPos chuck_pos(mcChunkX, mcChunkZ);
+	mc_map::Chunk* mychunk = mc_importer.m_world_cache->getChunk(chuck_pos);
 	if (mychunk)
 	{
 		for (int x = 0; x < 16; ++x)
@@ -687,7 +687,7 @@ bool GetChunkBlocks(int chunkX, int chunkZ, std::vector<int> *blocks)
 					for (int dy = 0; dy < 16; ++dy)
 					{
 						int y = nSection * 16 + dy;
-						mc::LocalBlockPos pos(x, z, y);
+						mc_map::LocalBlockPos pos(x, z, y);
 						uint16_t block_id = mychunk->getBlockID(pos);
 						if (block_id != 0)
 						{
@@ -805,7 +805,7 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 							}
 
 
-							mc::RegionFile* region = mc_importer.m_world_cache->getRegion(*itCur);
+							mc_map::RegionFile* region = mc_importer.m_world_cache->getRegion(*itCur);
 							if (!region){
 								continue;
 							}
@@ -814,8 +814,8 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 							// go through all chunks in the region
 							for (auto chunk_it = region_chunks.begin(); chunk_it != region_chunks.end(); ++chunk_it)
 							{
-								const mc::ChunkPos& chuck_pos = *chunk_it;
-								mc::Chunk* mychunk = mc_importer.m_world_cache->getChunk(chuck_pos);
+								const mc_map::ChunkPos& chuck_pos = *chunk_it;
+								mc_map::Chunk* mychunk = mc_importer.m_world_cache->getChunk(chuck_pos);
 								if (mychunk)
 								{
 									for (int x = 0; x < 16; ++x)
@@ -824,7 +824,7 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 										{
 											for (int y = min_y; y<max_y; ++y)
 											{
-												mc::LocalBlockPos pos(x, z, y);
+												mc_map::LocalBlockPos pos(x, z, y);
 												uint16_t block_id = mychunk->getBlockID(pos);
 												if (block_id != 0)
 												{
@@ -888,7 +888,7 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 							}
 
 
-							mc::RegionFile* region = mc_importer.m_world_cache->getRegion(*itCur);
+							mc_map::RegionFile* region = mc_importer.m_world_cache->getRegion(*itCur);
 							if (!region){
 								continue;
 							}
@@ -897,8 +897,8 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 							// go through all chunks in the region
 							for (auto chunk_it = region_chunks.begin(); chunk_it != region_chunks.end(); ++chunk_it)
 							{
-								const mc::ChunkPos& chuck_pos = *chunk_it;
-								mc::Chunk* mychunk = mc_importer.m_world_cache->getChunk(chuck_pos);
+								const mc_map::ChunkPos& chuck_pos = *chunk_it;
+								mc_map::Chunk* mychunk = mc_importer.m_world_cache->getChunk(chuck_pos);
 								if (mychunk)
 								{
 									for (int x = 0; x < 16; ++x)
@@ -907,7 +907,7 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 										{
 											for (int y = min_y; y<max_y; ++y)
 											{
-												mc::LocalBlockPos pos(x, z, y);
+												mc_map::LocalBlockPos pos(x, z, y);
 												uint16_t block_id = mychunk->getBlockID(pos);
 												uint16_t block_data = mychunk->getBlockData(pos);
 												if (block_data>0)

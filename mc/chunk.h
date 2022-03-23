@@ -26,52 +26,48 @@
 
 #include <stdint.h>
 
-namespace mapcrafter {
-	namespace mc {
+namespace mc_map {
 
-		/**
-		 * This is a Minecraft chunk from the Anvil world format. The class stores only the
-		 * sections, which exist in the nbt data, to save memory.
-		 */
-		class Chunk {
-		private:
-			ChunkPos m_pos;
+	/**
+	 * This is a Minecraft chunk from the Anvil world format. The class stores only the
+	 * sections, which exist in the nbt data, to save memory.
+	 */
+	class Chunk {
+	private:
+		ChunkPos m_pos;
 
-			int m_data_version;
-			int m_rotation;
-			std::vector<Section*> m_sections;
-			uint8_t m_biomes[256];
-		public:
-			Chunk();
-			virtual ~Chunk();
+		int m_data_version;
+		int m_rotation;
+		std::vector<Section*> m_sections;
+		uint8_t m_biomes[256];
+	public:
+		Chunk();
+		virtual ~Chunk();
 
-			void setRotation(int rotation);
+		void setRotation(int rotation);
 
-			bool readNBT(const char* data, size_t len, nbt::CompressionType compression = nbt::ZLIB);
-			void clear();
+		bool readNBT(const char* data, size_t len, nbt::CompressionType compression = nbt::ZLIB);
+		void clear();
 
-			bool hasSection(int y);
-			Section* Chunk::getSection(int y);
-			uint16_t getBlockID(const LocalBlockPos& pos);
-			uint8_t getBlockData(const LocalBlockPos& pos);
-
-
-			bool Chunk::hasSolidBlock(const LocalBlockPos& pos);
-			// if data or state value is 255,don't need check it;
-			bool hasBlock(const LocalBlockPos& pos, const uint16_t block_id = 0, const uint8_t data = 255, const uint8_t state = 255);
-
-			bool GetBlockInfo(LocalBlockPos pos, uint16_t& block_id, uint8_t& data, uint8_t& state);
-
-			/*uint8_t getBlockState(const LocalBlockPos& pos) const;
-			uint8_t getStairsBlockState(const LocalBlockPos& pos,uint16_t block_id) const;*/
-
-			uint8_t getBiomeAt(const LocalBlockPos& pos);
-
-			const ChunkPos& getPos() const;
-		};
+		bool hasSection(int y);
+		Section* Chunk::getSection(int y);
+		uint16_t getBlockID(const LocalBlockPos& pos);
+		uint8_t getBlockData(const LocalBlockPos& pos);
 
 
-	}
+		bool Chunk::hasSolidBlock(const LocalBlockPos& pos);
+		// if data or state value is 255,don't need check it;
+		bool hasBlock(const LocalBlockPos& pos, const uint16_t block_id = 0, const uint8_t data = 255, const uint8_t state = 255);
+
+		bool GetBlockInfo(LocalBlockPos pos, uint16_t& block_id, uint8_t& data, uint8_t& state);
+
+		/*uint8_t getBlockState(const LocalBlockPos& pos) const;
+		uint8_t getStairsBlockState(const LocalBlockPos& pos,uint16_t block_id) const;*/
+
+		uint8_t getBiomeAt(const LocalBlockPos& pos);
+
+		const ChunkPos& getPos() const;
+	};
 }
 
 #endif /* CHUNK_H_ */

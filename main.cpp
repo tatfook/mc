@@ -2,12 +2,22 @@
 #include <iostream>
 #include "mc/world.h"
 #include "mc/cache.h"
+#include "mc/schematics.h"
 
-using namespace mapcrafter;
-using namespace mc;
+using namespace mc_map;
 using namespace std;
 
+
 int main()
+{
+	Schematics schematics;
+
+	schematics.Load("D:/mcworld/gracefieldhouse.schem");
+	
+	return 0;
+}
+
+int test_mca()
 {
 	shared_ptr<World> world = make_shared<World>();
 	unique_ptr<WorldCache> world_cache = make_unique<WorldCache>(*world);

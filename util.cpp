@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <iomanip>
 
-namespace mapcrafter {
+namespace mc_map {
 
 bool isBigEndian() {
 	int test = 1;

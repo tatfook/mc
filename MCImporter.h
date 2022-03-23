@@ -13,8 +13,7 @@
 #include "mc/world.h"
 #include "mc/cache.h"
 
-using namespace mapcrafter;
-using namespace mapcrafter::mc;
+using namespace mc_map;
 
 class MCImporter
 {
@@ -29,13 +28,13 @@ public:
 	/** load a given world folder */
 	bool LoadWorld(const std::string& sFolderName);
 
-	uint16_t getBlock(const mc::BlockPos& pos, mc::Chunk* chunk) const;
+	uint16_t getBlock(const BlockPos& pos, Chunk* chunk) const;
 
 	/** return true if the block's nearby 4 blocks are all obstructed blocks. */
-	bool isOccludedBlock(const mc::BlockPos& pos, mc::Chunk* chunk, uint16_t id) const;
+	bool isOccludedBlock(const BlockPos& pos, Chunk* chunk, uint16_t id) const;
 public:
-	mc::World m_world;
-	std::unique_ptr<mc::WorldCache> m_world_cache;
+	World m_world;
+	std::unique_ptr<WorldCache> m_world_cache;
 	//mc::WorldCache* p_world_cache;
 	void initOffsetRegionPos();
 	void TranslateParacraftChunkPos(int &chunkX,int &chunkZ);

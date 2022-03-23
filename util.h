@@ -38,7 +38,7 @@ namespace fs = boost::filesystem;
 	#define OLD_BOOST 42
 #endif
 
-namespace mapcrafter {
+namespace mc_map {
 
 bool isBigEndian();
 

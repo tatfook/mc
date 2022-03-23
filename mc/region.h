@@ -26,54 +26,51 @@
 #include <string>
 #include <set>
 
-namespace mapcrafter {
-namespace mc {
+namespace mc_map {
 
-/**
- * This class represents a Minecraft region file.
- */
-class RegionFile {
-private:
-	std::string filename;
-	RegionPos regionpos;
+	/**
+	 * This class represents a Minecraft region file.
+	 */
+	class RegionFile {
+	private:
+		std::string filename;
+		RegionPos regionpos;
 
-	int rotation;
+		int rotation;
 
-	// a set with all available chunks
-	std::set<ChunkPos> containing_chunks;
+		// a set with all available chunks
+		std::set<ChunkPos> containing_chunks;
 
-	// the offsets, where the chunkdata starts
-	int chunk_offsets[1024];
-	// timestamps of the chunks
-	int chunk_timestamps[1024];
-	// data from the region file
-	std::vector<uint8_t> regiondata;
+		// the offsets, where the chunkdata starts
+		int chunk_offsets[1024];
+		// timestamps of the chunks
+		int chunk_timestamps[1024];
+		// data from the region file
+		std::vector<uint8_t> regiondata;
 
-	bool readHeaders(std::ifstream& file);
-public:
-	RegionFile();
-	RegionFile(const std::string& filename, int rotation = 0);
-	virtual ~RegionFile();
+		bool readHeaders(std::ifstream& file);
+	public:
+		RegionFile();
+		RegionFile(const std::string& filename, int rotation = 0);
+		virtual ~RegionFile();
 
-	bool loadAll();
-	bool loadHeaders();
+		bool loadAll();
+		bool loadHeaders();
 
-	const std::string& getFilename() const;
-	const RegionPos& getPos() const;
+		const std::string& getFilename() const;
+		const RegionPos& getPos() const;
 
-	const std::set<ChunkPos>& getContainingChunks() const;
-	bool hasChunk(const ChunkPos& chunk) const;
+		const std::set<ChunkPos>& getContainingChunks() const;
+		bool hasChunk(const ChunkPos& chunk) const;
 
-	int getChunkTimestamp(const ChunkPos& chunk) const;
-	int loadChunk(const ChunkPos& pos, Chunk& chunk);
+		int getChunkTimestamp(const ChunkPos& chunk) const;
+		int loadChunk(const ChunkPos& pos, Chunk& chunk);
 
-	static const int CHUNK_OK = 1;
-	static const int CHUNK_DOES_NOT_EXIST = 2;
-	static const int CHUNK_DATA_INVALID = 3;
-	static const int CHUNK_NBT_ERROR = 4;
-};
-
-}
+		static const int CHUNK_OK = 1;
+		static const int CHUNK_DOES_NOT_EXIST = 2;
+		static const int CHUNK_DATA_INVALID = 3;
+		static const int CHUNK_NBT_ERROR = 4;
+	};
 }
 
 #endif /* REGION_H_ */

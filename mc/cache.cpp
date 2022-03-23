@@ -21,182 +21,178 @@
 #include <math.h>
 #include "MCblock.h"
 
-namespace mapcrafter {
-namespace mc {
-
-WorldCache::WorldCache(const World& world)
+namespace mc_map {
+	WorldCache::WorldCache(const World& world)
 		: world(world) {
-	for (int i = 0; i < RSIZE; i++) {
-		regioncache[i].used = false;
+		for (int i = 0; i < RSIZE; i++) {
+			regioncache[i].used = false;
+		}
+		for (int i = 0; i < CSIZE; i++) {
+			chunkcache[i].used = false;
+		}
 	}
-	for (int i = 0; i < CSIZE; i++) {
-		chunkcache[i].used = false;
+
+	/**
+	 * Calculates the position of a region position in the cache.
+	 */
+	int WorldCache::getRegionCacheIndex(const RegionPos& pos) {
+		return (((pos.x + 4096) & RMASK) * RWIDTH + (pos.z + 4096)) & RMASK;
 	}
-}
 
-/**
- * Calculates the position of a region position in the cache.
- */
-int WorldCache::getRegionCacheIndex(const RegionPos& pos) {
-	return (((pos.x + 4096) & RMASK) * RWIDTH + (pos.z + 4096)) & RMASK;
-}
+	/**
+	 * Calculates the position of a chunk position in the cache.
+	 */
+	int WorldCache::getChunkCacheIndex(const ChunkPos& pos) {
+		//                4096*32
+		return (((pos.x + 131072) & CMASK) * CWIDTH + (pos.z + 131072)) & CMASK;
+	}
 
-/**
- * Calculates the position of a chunk position in the cache.
- */
-int WorldCache::getChunkCacheIndex(const ChunkPos& pos) {
-	//                4096*32
-	return (((pos.x + 131072) & CMASK) * CWIDTH + (pos.z + 131072)) & CMASK;
-}
+	RegionFile* WorldCache::getRegion(const RegionPos& pos) {
+		CacheEntry<RegionPos, RegionFile>& entry = regioncache[getRegionCacheIndex(pos)];
+		// check if region is already in cache
+		if (entry.used && entry.key == pos) {
+			//regionstats.hits++;
+			return &entry.value;
+		}
 
-RegionFile* WorldCache::getRegion(const RegionPos& pos) {
-	CacheEntry<RegionPos, RegionFile>& entry = regioncache[getRegionCacheIndex(pos)];
-	// check if region is already in cache
-	if (entry.used && entry.key == pos) {
-		//regionstats.hits++;
+		// if not try to load the region
+
+		// region does not exist, region in cache was not modified
+		if (!world.getRegion(pos, entry.value))
+			return NULL;
+
+		if (!entry.value.loadAll()) {
+			// the region is not valid, region in cache was probably modified
+			entry.used = false;
+			return NULL;
+		}
+
+		entry.used = true;
+		entry.key = pos;
+		//regionstats.misses++;
 		return &entry.value;
 	}
 
-	// if not try to load the region
+	Chunk* WorldCache::getChunk(const ChunkPos& pos) {
+		CacheEntry<ChunkPos, Chunk>& entry = chunkcache[getChunkCacheIndex(pos)];
+		// check if chunk is already in cache
+		if (entry.used && entry.key == pos) {
+			//chunkstats.hits++;
+			return &entry.value;
+		}
 
-	// region does not exist, region in cache was not modified
-	if (!world.getRegion(pos, entry.value))
-		return NULL;
+		// if not try to get the region of the chunk from the cache
+		RegionFile* region = getRegion(pos.getRegion());
+		if (region == NULL) {
+			//chunkstats.unavailable++;
+			return NULL;
+		}
 
-	if (!entry.value.loadAll()) {
-		// the region is not valid, region in cache was probably modified
-		entry.used = false;
-		return NULL;
-	}
+		// then try to load the chunk
+		int status = region->loadChunk(pos, entry.value);
+		// the chunk does not exist, chunk in cache was not modified
+		if (status == RegionFile::CHUNK_DOES_NOT_EXIST)
+			return NULL;
 
-	entry.used = true;
-	entry.key = pos;
-	//regionstats.misses++;
-	return &entry.value;
-}
+		if (status != RegionFile::CHUNK_OK) {
+			//chunkstats.unavailable++;
+			// the chunk is not valid, chunk in cache was probably modified
+			entry.used = false;
+			return NULL;
+		}
 
-Chunk* WorldCache::getChunk(const ChunkPos& pos) {
-	CacheEntry<ChunkPos, Chunk>& entry = chunkcache[getChunkCacheIndex(pos)];
-	// check if chunk is already in cache
-	if (entry.used && entry.key == pos) {
-		//chunkstats.hits++;
+		entry.used = true;
+		entry.key = pos;
+		//chunkstats.misses++;
 		return &entry.value;
 	}
 
-	// if not try to get the region of the chunk from the cache
-	RegionFile* region = getRegion(pos.getRegion());
-	if (region == NULL) {
-		//chunkstats.unavailable++;
-		return NULL;
+	const CacheStats& WorldCache::getRegionCacheStats() const {
+		return regionstats;
 	}
 
-	// then try to load the chunk
-	int status = region->loadChunk(pos, entry.value);
-	// the chunk does not exist, chunk in cache was not modified
-	if (status == RegionFile::CHUNK_DOES_NOT_EXIST)
-		return NULL;
-
-	if (status != RegionFile::CHUNK_OK) {
-		//chunkstats.unavailable++;
-		// the chunk is not valid, chunk in cache was probably modified
-		entry.used = false;
-		return NULL;
+	const CacheStats& WorldCache::getChunkCacheStats() const {
+		return chunkstats;
 	}
 
-	entry.used = true;
-	entry.key = pos;
-	//chunkstats.misses++;
-	return &entry.value;
-}
+	//BlockPos LocalBlockPos::toGlobalPos(const ChunkPos& chunk) const {
+	//	return BlockPos(x + chunk.x * 16, z + chunk.z * 16, y);
+	//}
 
-const CacheStats& WorldCache::getRegionCacheStats() const {
-	return regionstats;
-}
-
-const CacheStats& WorldCache::getChunkCacheStats() const {
-	return chunkstats;
-}
-
-//BlockPos LocalBlockPos::toGlobalPos(const ChunkPos& chunk) const {
-//	return BlockPos(x + chunk.x * 16, z + chunk.z * 16, y);
-//}
-
-bool WorldCache::hasBlock(BlockPos blockpos, uint16_t block_id, uint8_t data, uint8_t state)
-{
-	ChunkPos chunkpos(blockpos);
-	RegionPos &regionpos = chunkpos.getRegion();
-	if (world.hasRegion(regionpos))
+	bool WorldCache::hasBlock(BlockPos blockpos, uint16_t block_id, uint8_t data, uint8_t state)
 	{
-		RegionFile* region = getRegion(regionpos);
-		if (region)
+		ChunkPos chunkpos(blockpos);
+		RegionPos& regionpos = chunkpos.getRegion();
+		if (world.hasRegion(regionpos))
 		{
-			if (region->hasChunk(chunkpos))
+			RegionFile* region = getRegion(regionpos);
+			if (region)
 			{
-				Chunk* chunk = getChunk(chunkpos);
-				if (chunk)
+				if (region->hasChunk(chunkpos))
 				{
-					if (chunk->hasBlock(blockpos.toLocalPos(), block_id, data, state))
-						return true;
+					Chunk* chunk = getChunk(chunkpos);
+					if (chunk)
+					{
+						if (chunk->hasBlock(blockpos.toLocalPos(), block_id, data, state))
+							return true;
+					}
 				}
 			}
 		}
+		return false;
 	}
-	return false;
-}
 
-bool WorldCache::GetBlockInfo(BlockPos blockpos, uint16_t &block_id, uint8_t &data, uint8_t &state)
-{
-	ChunkPos chunkpos(blockpos);
-	RegionPos &regionpos = chunkpos.getRegion();
-	if (world.hasRegion(regionpos))
+	bool WorldCache::GetBlockInfo(BlockPos blockpos, uint16_t& block_id, uint8_t& data, uint8_t& state)
 	{
-		RegionFile* region = getRegion(regionpos);
-		if (region)
+		ChunkPos chunkpos(blockpos);
+		RegionPos& regionpos = chunkpos.getRegion();
+		if (world.hasRegion(regionpos))
 		{
-			if (region->hasChunk(chunkpos))
+			RegionFile* region = getRegion(regionpos);
+			if (region)
 			{
-				Chunk* chunk = getChunk(chunkpos);
-				if (chunk)
+				if (region->hasChunk(chunkpos))
 				{
-					return chunk->GetBlockInfo(blockpos.toLocalPos(), block_id, data, state);
+					Chunk* chunk = getChunk(chunkpos);
+					if (chunk)
+					{
+						return chunk->GetBlockInfo(blockpos.toLocalPos(), block_id, data, state);
+					}
 				}
 			}
 		}
+		return false;
 	}
-	return false;
-}
 
-uint16_t WorldCache::getBlockID(BlockPos& blockpos){
-	ChunkPos chunkpos(blockpos);
-	RegionPos &regionpos = chunkpos.getRegion();
-	if (world.hasRegion(regionpos))
-	{
-		RegionFile* region = getRegion(regionpos);
-		if (region)
+	uint16_t WorldCache::getBlockID(BlockPos& blockpos) {
+		ChunkPos chunkpos(blockpos);
+		RegionPos& regionpos = chunkpos.getRegion();
+		if (world.hasRegion(regionpos))
 		{
-			if (region->hasChunk(chunkpos))
+			RegionFile* region = getRegion(regionpos);
+			if (region)
 			{
-				Chunk* chunk = getChunk(chunkpos);
-				if (chunk)
+				if (region->hasChunk(chunkpos))
 				{
-					return chunk->getBlockID(blockpos.toLocalPos());
+					Chunk* chunk = getChunk(chunkpos);
+					if (chunk)
+					{
+						return chunk->getBlockID(blockpos.toLocalPos());
+					}
 				}
 			}
 		}
+		return 0;
 	}
-	return 0;
-}
 
-bool WorldCache::hasSolidBlock(BlockPos& pos)
-{
-	uint16_t block_id = getBlockID(pos);
-	if (block_id > 0)
+	bool WorldCache::hasSolidBlock(BlockPos& pos)
 	{
-		if (MCBlock::IsSolidBlock(block_id))
-			return true;
+		uint16_t block_id = getBlockID(pos);
+		if (block_id > 0)
+		{
+			if (MCBlock::IsSolidBlock(block_id))
+				return true;
+		}
+		return false;
 	}
-	return false;
-}
-
-}
 }

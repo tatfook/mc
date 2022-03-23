@@ -27,265 +27,263 @@
 #include <string>
 #include <sstream>
 
-namespace mapcrafter {
-	namespace mc {
-		namespace nbt {
+namespace mc_map {
+	namespace nbt {
 
-			enum TagType {
-				TAG_END,
-				TAG_BYTE,
-				TAG_SHORT,
-				TAG_INT,
-				TAG_LONG,
-				TAG_FLOAT,
-				TAG_DOUBLE,
-				TAG_BYTE_ARRAY,
-				TAG_STRING,
-				TAG_LIST,
-				TAG_COMPOUND,
-				TAG_INT_ARRAY,
-				TAG_LONG_ARRAY,
-				TAG_SHORT_ARRAY
-			};
+		enum TagType {
+			TAG_END,
+			TAG_BYTE,
+			TAG_SHORT,
+			TAG_INT,
+			TAG_LONG,
+			TAG_FLOAT,
+			TAG_DOUBLE,
+			TAG_BYTE_ARRAY,
+			TAG_STRING,
+			TAG_LIST,
+			TAG_COMPOUND,
+			TAG_INT_ARRAY,
+			TAG_LONG_ARRAY,
+			TAG_SHORT_ARRAY
+		};
 
-			enum CompressionType {
-				NO_COMPRESSION = 0, GZIP = 1, ZLIB = 2
-			};
+		enum CompressionType {
+			NO_COMPRESSION = 0, GZIP = 1, ZLIB = 2
+		};
 
-			template<typename T>
-			void dumpTag(std::ostream& stream, const char* type, bool named,
-				const std::string& name, const std::string& indendation, T payload);
+		template<typename T>
+		void dumpTag(std::ostream& stream, const char* type, bool named,
+			const std::string& name, const std::string& indendation, T payload);
 
-			class NBTError : public std::exception {
-			private:
-				std::string message;
-			public:
-				NBTError(const char* message);
-				NBTError(const std::string& message);
-				~NBTError() throw ();
+		class NBTError : public std::exception {
+		private:
+			std::string message;
+		public:
+			NBTError(const char* message);
+			NBTError(const std::string& message);
+			~NBTError() throw ();
 
-				virtual const char* what() const throw ();
-			};
+			virtual const char* what() const throw ();
+		};
 
-			class NBTTag {
-			protected:
-				TagType type;
-				bool named;
-				bool writeType;
-				std::string name;
-			public:
-				NBTTag();
-				NBTTag(TagType type);
-				virtual ~NBTTag();
+		class NBTTag {
+		protected:
+			TagType type;
+			bool named;
+			bool writeType;
+			std::string name;
+		public:
+			NBTTag();
+			NBTTag(TagType type);
+			virtual ~NBTTag();
 
-				const TagType& getType() const;
+			const TagType& getType() const;
 
-				bool isNamed() const;
-				void setNamed(bool named);
+			bool isNamed() const;
+			void setNamed(bool named);
 
-				bool isWriteType() const;
-				void setWriteType(bool writeType);
+			bool isWriteType() const;
+			void setWriteType(bool writeType);
 
-				const std::string& getName() const;
-				void setName(const std::string& name, bool setNamed = true);
+			const std::string& getName() const;
+			void setName(const std::string& name, bool setNamed = true);
 
-				virtual NBTTag& read(std::istream& stream);
-				virtual void write(std::ostream& stream) const;
-				virtual void dump(std::ostream& stream, const std::string& indendation = "") const;
-			};
+			virtual NBTTag& read(std::istream& stream);
+			virtual void write(std::ostream& stream) const;
+			virtual void dump(std::ostream& stream, const std::string& indendation = "") const;
+		};
 
-			class TagEnd : public NBTTag {
-			public:
-				TagEnd() : NBTTag(TAG_END) {}
-			};
+		class TagEnd : public NBTTag {
+		public:
+			TagEnd() : NBTTag(TAG_END) {}
+		};
 
-			class TagByte : public NBTTag {
-			public:
-				TagByte() : NBTTag(TAG_BYTE), payload(0) {}
-				TagByte(int8_t payload) : NBTTag(TAG_BYTE), payload(payload) {}
+		class TagByte : public NBTTag {
+		public:
+			TagByte() : NBTTag(TAG_BYTE), payload(0) {}
+			TagByte(int8_t payload) : NBTTag(TAG_BYTE), payload(payload) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				int8_t payload;
-			};
+			int8_t payload;
+		};
 
-			class TagShort : public NBTTag {
-			public:
-				TagShort() : NBTTag(TAG_SHORT), payload(0) {}
-				TagShort(int16_t payload) : NBTTag(TAG_SHORT), payload(payload) {}
+		class TagShort : public NBTTag {
+		public:
+			TagShort() : NBTTag(TAG_SHORT), payload(0) {}
+			TagShort(int16_t payload) : NBTTag(TAG_SHORT), payload(payload) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				int16_t payload;
-			};
+			int16_t payload;
+		};
 
-			class TagInt : public NBTTag {
-			public:
-				TagInt() : NBTTag(TAG_INT), payload(0) {}
-				TagInt(int32_t payload) : NBTTag(TAG_INT), payload(payload) {}
+		class TagInt : public NBTTag {
+		public:
+			TagInt() : NBTTag(TAG_INT), payload(0) {}
+			TagInt(int32_t payload) : NBTTag(TAG_INT), payload(payload) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				int32_t payload;
-			};
+			int32_t payload;
+		};
 
-			class TagLong : public NBTTag {
-			public:
-				TagLong() : NBTTag(TAG_LONG), payload(0) {}
-				TagLong(int64_t payload) : NBTTag(TAG_LONG), payload(payload) {}
+		class TagLong : public NBTTag {
+		public:
+			TagLong() : NBTTag(TAG_LONG), payload(0) {}
+			TagLong(int64_t payload) : NBTTag(TAG_LONG), payload(payload) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				int64_t payload;
-			};
+			int64_t payload;
+		};
 
-			class TagFloat : public NBTTag {
-			public:
-				TagFloat() : NBTTag(TAG_FLOAT), payload(0) {}
-				TagFloat(float payload) : NBTTag(TAG_FLOAT), payload(payload) {}
+		class TagFloat : public NBTTag {
+		public:
+			TagFloat() : NBTTag(TAG_FLOAT), payload(0) {}
+			TagFloat(float payload) : NBTTag(TAG_FLOAT), payload(payload) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				float payload;
-			};
+			float payload;
+		};
 
-			class TagDouble : public NBTTag {
-			public:
-				TagDouble() : NBTTag(TAG_DOUBLE), payload(0) {}
-				TagDouble(double payload) : NBTTag(TAG_DOUBLE), payload(payload) {}
+		class TagDouble : public NBTTag {
+		public:
+			TagDouble() : NBTTag(TAG_DOUBLE), payload(0) {}
+			TagDouble(double payload) : NBTTag(TAG_DOUBLE), payload(payload) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				double payload;
-			};
+			double payload;
+		};
 
-			class TagByteArray : public NBTTag {
-			public:
-				TagByteArray() : NBTTag(TAG_BYTE_ARRAY) {}
+		class TagByteArray : public NBTTag {
+		public:
+			TagByteArray() : NBTTag(TAG_BYTE_ARRAY) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				std::vector<int8_t> payload;
-			};
+			std::vector<int8_t> payload;
+		};
 
-			class TagString : public NBTTag {
-			public:
-				TagString() : NBTTag(TAG_STRING) {}
-				TagString(const std::string& payload) : NBTTag(TAG_STRING), payload(payload) {}
+		class TagString : public NBTTag {
+		public:
+			TagString() : NBTTag(TAG_STRING) {}
+			TagString(const std::string& payload) : NBTTag(TAG_STRING), payload(payload) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				std::string payload;
-			};
+			std::string payload;
+		};
 
-			class TagList : public NBTTag {
-			public:
-				TagList() : NBTTag(TAG_LIST), tag_type(-1) {}
-				TagList(int tag_type) : NBTTag(TAG_LIST), tag_type(tag_type) {}
-				~TagList();
+		class TagList : public NBTTag {
+		public:
+			TagList() : NBTTag(TAG_LIST), tag_type(-1) {}
+			TagList(int tag_type) : NBTTag(TAG_LIST), tag_type(tag_type) {}
+			~TagList();
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				int tag_type;
-				std::vector<NBTTag*> payload;
-			};
+			int tag_type;
+			std::vector<NBTTag*> payload;
+		};
 
-			class TagCompound : public NBTTag {
-			public:
-				TagCompound() : NBTTag(TAG_COMPOUND) { setName(""); }
-				TagCompound(const std::string& name) : NBTTag(TAG_COMPOUND) { setName(name); }
-				~TagCompound();
+		class TagCompound : public NBTTag {
+		public:
+			TagCompound() : NBTTag(TAG_COMPOUND) { setName(""); }
+			TagCompound(const std::string& name) : NBTTag(TAG_COMPOUND) { setName(name); }
+			~TagCompound();
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				NBTTag* findTag(const std::string& name) const;
+			NBTTag* findTag(const std::string& name) const;
 
-				template <typename T>
-				T* findTag(const std::string& name, TagType type) const {
-					NBTTag* tag = findTag(name);
-					if (tag != NULL && tag->getType() == type)
-						return (T*)tag;
-					return NULL;
-				}
-				void addTag(const std::string& name, NBTTag* tag);
+			template <typename T>
+			T* findTag(const std::string& name, TagType type) const {
+				NBTTag* tag = findTag(name);
+				if (tag != NULL && tag->getType() == type)
+					return (T*)tag;
+				return NULL;
+			}
+			void addTag(const std::string& name, NBTTag* tag);
 
-				std::map<std::string, NBTTag*> payload;
-			};
+			std::map<std::string, NBTTag*> payload;
+		};
 
-			class TagIntArray : public NBTTag {
-			public:
-				TagIntArray() : NBTTag(TAG_INT_ARRAY) {}
+		class TagIntArray : public NBTTag {
+		public:
+			TagIntArray() : NBTTag(TAG_INT_ARRAY) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				std::vector<int32_t> payload;
-			};
+			std::vector<int32_t> payload;
+		};
 
-			class TagLongArray : public NBTTag {
-			public:
-				TagLongArray() : NBTTag(TAG_LONG_ARRAY) {}
+		class TagLongArray : public NBTTag {
+		public:
+			TagLongArray() : NBTTag(TAG_LONG_ARRAY) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				std::vector<int64_t> payload;
-			};
+			std::vector<int64_t> payload;
+		};
 
-			class TagShortArray : public NBTTag {
-			public:
-				TagShortArray() : NBTTag(TAG_LONG_ARRAY) {}
+		class TagShortArray : public NBTTag {
+		public:
+			TagShortArray() : NBTTag(TAG_LONG_ARRAY) {}
 
-				NBTTag& read(std::istream& stream);
-				void write(std::ostream& stream) const;
-				void dump(std::ostream& stream, const std::string& indendation = "") const;
+			NBTTag& read(std::istream& stream);
+			void write(std::ostream& stream) const;
+			void dump(std::ostream& stream, const std::string& indendation = "") const;
 
-				std::vector<int16_t> payload;
-			};
+			std::vector<int16_t> payload;
+		};
 
-			class NBTFile : public TagCompound {
-			private:
-				void decompressStream(std::istream& stream, std::stringstream& decompressed,
-					CompressionType compression);
-			public:
-				NBTFile();
-				NBTFile(const std::string name) : TagCompound(name) {}
-				~NBTFile();
+		class NBTFile : public TagCompound {
+		private:
+			void decompressStream(std::istream& stream, std::stringstream& decompressed,
+				CompressionType compression);
+		public:
+			NBTFile();
+			NBTFile(const std::string name) : TagCompound(name) {}
+			~NBTFile();
 
-				void readCompressed(std::istream& stream, CompressionType compression = GZIP);
-				void readNBT(std::istream& stream, CompressionType compression = GZIP);
-				void readNBT(const char* filename, CompressionType compression = GZIP);
-				void readNBT(const char* buffer, size_t len, CompressionType compression = GZIP);
+			void readCompressed(std::istream& stream, CompressionType compression = GZIP);
+			void readNBT(std::istream& stream, CompressionType compression = GZIP);
+			void readNBT(const char* filename, CompressionType compression = GZIP);
+			void readNBT(const char* buffer, size_t len, CompressionType compression = GZIP);
 
-				void writeNBT(std::ostream& stream, CompressionType compression = GZIP);
-				void writeNBT(const char* filename, CompressionType compression = GZIP);
-			};
+			void writeNBT(std::ostream& stream, CompressionType compression = GZIP);
+			void writeNBT(const char* filename, CompressionType compression = GZIP);
+		};
 
-			NBTTag* createTag(int type);
+		NBTTag* createTag(int type);
 
-		}
 	}
 }
 

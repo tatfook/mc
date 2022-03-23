@@ -28,55 +28,53 @@
 #include <unordered_set>
 #include <unordered_map>
 
-namespace mapcrafter {
-namespace mc {
+namespace mc_map {
 
-/**
- * Simple hash function to use regions in unordered_set/map.
- * This just assumes that there are maximal 8096 regions on x/z axis, this are
- * all in all 8096^2=67108864 regions. I think this should be enough.
- */
-struct hash_function {
-	long operator()(const RegionPos& region) const {
-		return (region.x+4096) * 2048 + region.z + 4096;
-	}
-};
+	/**
+	 * Simple hash function to use regions in unordered_set/map.
+	 * This just assumes that there are maximal 8096 regions on x/z axis, this are
+	 * all in all 8096^2=67108864 regions. I think this should be enough.
+	 */
+	struct hash_function {
+		long operator()(const RegionPos& region) const {
+			return (region.x + 4096) * 2048 + region.z + 4096;
+		}
+	};
 
-/**
- * This class represents a Minecraft world. It manages only the available region files.
- * Access to the chunks is with the region files possible. If you want full reading
- * access to the world, use the WorldCache class.
- */
-class World {
-private:
-	int rotation;
+	/**
+	 * This class represents a Minecraft world. It manages only the available region files.
+	 * Access to the chunks is with the region files possible. If you want full reading
+	 * access to the world, use the WorldCache class.
+	 */
+	class World {
+	private:
+		int rotation;
 
-	std::string worldpath;
+		std::string worldpath;
 
-	std::unordered_set<RegionPos, hash_function> available_regions;
-	std::unordered_map<RegionPos, std::string, hash_function> region_files;
+		std::unordered_set<RegionPos, hash_function> available_regions;
+		std::unordered_map<RegionPos, std::string, hash_function> region_files;
 
-	bool readRegions(const std::string& path);
-public:
-	World();
-	~World();
+		bool readRegions(const std::string& path);
+	public:
+		World();
+		~World();
 
-	bool load(const std::string& dir, int rotation = 0);
+		bool load(const std::string& dir, int rotation = 0);
 
-	int getRegionCount() const;
+		int getRegionCount() const;
 
-	bool hasRegion(const RegionPos& pos) const;
-	const std::unordered_set<RegionPos, hash_function>& getAvailableRegions() const;
+		bool hasRegion(const RegionPos& pos) const;
+		const std::unordered_set<RegionPos, hash_function>& getAvailableRegions() const;
 
-	bool getRegion(const RegionPos& pos, RegionFile& region) const;
+		bool getRegion(const RegionPos& pos, RegionFile& region) const;
 
-	void GetOriginalRegionPos(int *originalRegionX, int *originalRegionZ);
+		void GetOriginalRegionPos(int* originalRegionX, int* originalRegionZ);
 
-	bool GetSpawnPosition(int &spawnX, int &spawnY, int &spawnZ);
+		bool GetSpawnPosition(int& spawnX, int& spawnY, int& spawnZ);
 
-};
+	};
 
-}
 }
 
 #endif /* WORLD_H_ */
