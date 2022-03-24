@@ -23,6 +23,38 @@ namespace mc_map {
 			std::cerr << "Invalid Width Height Length" << std::endl;
 			return false;
 		}
+		m_width = tagWidth->payload;
+		m_height = tagHeight->payload;
+		m_length = tagLength->payload;
+		uint32_t size = m_width * m_height * m_length;
+		m_block_ids.resize(size);
+		m_block_datas.resize(size);
+
+		nbt::TagInt* tagDataVersion = root.findTag<nbt::TagInt>("DataVersion", nbt::TAG_INT);
+		int dataVersion = 0;
+		if (tagDataVersion != NULL) dataVersion = tagDataVersion->payload;
+
+		
+		if (dataVersion > 2840) {
+			nbt::TagCompound* tagPalette = root.findTag<nbt::TagCompound>("Palette", nbt::TAG_COMPOUND);
+			nbt::TagInt* tagPaletteMax = root.findTag<nbt::TagInt>("PaletteMax", nbt::TAG_INT);
+			nbt::TagByteArray* tagBlockData = root.findTag<nbt::TagByteArray>("BlockData", nbt::TAG_BYTE_ARRAY);
+			if (tagPalette == NULL || tagPaletteMax == NULL || tagBlockData == NULL) return false;
+			std::vector<std::string> blockNames(tagPaletteMax->payload);
+			std::map<std::string, nbt::NBTTag*> palette = tagPalette->payload;
+			for (std::map<std::string, nbt::NBTTag*>::iterator it = palette.begin(); it != palette.end(); it++) {
+				std::string name = it->first;
+				int index = ((nbt::TagInt*)(it->second))->payload;
+				blockNames[index] = name.substr(0, name.find_first_of('['));
+			}
+			std::vector<int8_t>& blockIndexs = tagBlockData->payload;
+			for (int i = 0; i < size; i++) {
+				int index = blockIndexs[i];
+				m_block_ids[i] = block::GetBlockIdByName(blockNames[index]);
+				m_block_datas[i] = block::GetBlockDataByName(blockNames[index]);
+			}
+		}
+
 
 		return true;
 	}
@@ -30,7 +62,7 @@ namespace mc_map {
 
 
 //https://minecraft.fandom.com/zh/wiki/Schematic%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F
-
+//https://www.minecraft-schematics.com/schematic/17599/
 //int StartX = (a_Item.m_StartX == -1) ? 0 : std::min(Width, std::max(a_Item.m_StartX, 0));
 //int StartY = (a_Item.m_StartY == -1) ? 0 : std::min(Height, std::max(a_Item.m_StartY, 0));
 //int StartZ = (a_Item.m_StartZ == -1) ? 0 : std::min(Length, std::max(a_Item.m_StartZ, 0));

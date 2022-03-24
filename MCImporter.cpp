@@ -37,6 +37,8 @@ extern "C" {
 	CORE_EXPORT_DECL bool GetChunkBlocks(int chunkX, int chunkZ, std::vector<int> *blocks);
 	CORE_EXPORT_DECL void GetRegionOffset(int &offsetRegionX, int &offsetRegionZ);
 	CORE_EXPORT_DECL bool GetSpawnPosition(int &spawnX, int &spawnY, int &spawnZ);
+
+	CORE_EXPORT_DECL bool LoadSchematics(const std::string& filepath);
 #ifdef __cplusplus
 }   /* extern "C" */
 #endif
@@ -724,6 +726,11 @@ bool GetChunkBlocks(int chunkX, int chunkZ, std::vector<int> *blocks)
 	return true;
 }
 
+bool LoadSchematics(const std::string& filepath)
+{
+	return true;
+}
+
 CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 {
 	if(nType == ParaEngine::PluginActType_STATE)
@@ -1028,6 +1035,19 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 			std::string output;
 			NPLInterface::NPLHelper::NPLTableToString("msg", msg, output);
 			pState->call(sCallback.c_str(), output.c_str(), (int)output.size());
+		}
+		else if (sCmd == "LoadSchematics")
+		{
+			const std::string& filepath = tabMsg["filepath"];
+			const std::string& sCallback = tabMsg["callback"];
+			NPLInterface::NPLObjectProxy msg;
+			msg["cmd"] = sCmd;
+			msg["succeed"] = LoadSchematics(filepath);
+
+			std::string output;
+			NPLInterface::NPLHelper::NPLTableToString("msg", msg, output);
+			pState->call(sCallback.c_str(), output.c_str(), (int)output.size());
+
 		}
 	}
 }

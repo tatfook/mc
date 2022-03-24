@@ -12,7 +12,7 @@ int main()
 {
 	Schematics schematics;
 
-	schematics.Load("D:/mcworld/gracefieldhouse.schem");
+	schematics.Load("D:/mcworld/schem/gracefieldhouse.schem");
 	
 	return 0;
 }
