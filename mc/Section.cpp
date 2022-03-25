@@ -103,8 +103,6 @@ namespace mc_map {
 
 	void Section::PlatteToIdAndData(nbt::TagList* tagPalettes, uint16_t* platte_indexs)
 	{
-		block::InitBlockMap();
-
 		size_t palette_size = tagPalettes->payload.size();
 		for (int i = 0; i < 4096; i++) {
 			uint16_t palette_index = platte_indexs[i];

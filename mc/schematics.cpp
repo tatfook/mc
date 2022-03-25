@@ -34,7 +34,8 @@ namespace mc_map {
 		int dataVersion = 0;
 		if (tagDataVersion != NULL) dataVersion = tagDataVersion->payload;
 
-		
+		nbt::TagString* tagMaterials = root.findTag<nbt::TagString>("Materials", nbt::TAG_STRING);
+
 		if (dataVersion > 2840) {
 			nbt::TagCompound* tagPalette = root.findTag<nbt::TagCompound>("Palette", nbt::TAG_COMPOUND);
 			nbt::TagInt* tagPaletteMax = root.findTag<nbt::TagInt>("PaletteMax", nbt::TAG_INT);
@@ -54,7 +55,32 @@ namespace mc_map {
 				m_block_datas[i] = block::GetBlockDataByName(blockNames[index]);
 			}
 		}
+		else if (tagMaterials && tagMaterials->payload == "Alpha") {
+			nbt::TagByteArray* tagBlocks = root.findTag<nbt::TagByteArray>("Blocks", nbt::TAG_BYTE_ARRAY);
+			nbt::TagByteArray* tagData = root.findTag<nbt::TagByteArray>("Data", nbt::TAG_BYTE_ARRAY);
+			nbt::TagByteArray* tagAdd = root.findTag<nbt::TagByteArray>("Add", nbt::TAG_BYTE_ARRAY);
+			nbt::TagByteArray* tagAddBlocks = root.findTag<nbt::TagByteArray>("AddBlocks", nbt::TAG_BYTE_ARRAY);
 
+			if (tagBlocks == NULL || tagData == NULL) return false;
+			tagAdd = tagAdd != NULL ? tagAdd : tagAddBlocks;
+			for (int i = 0; i < size; i++) {
+				int16_t add = 0;
+				if (tagAdd) {
+					if ((i % 2) == 0)
+						add = (tagAdd->payload)[i / 2] & 0x0f;
+					else
+						add = ((tagAdd->payload)[i / 2] >> 4) & 0x0f;
+
+				}
+				m_block_ids[i] = (tagBlocks->payload)[i] + (add << 8);
+				int8_t data = 0;
+				if ((i % 2) == 0)
+					data = (tagData->payload)[i / 2] & 0x0f;
+				else
+					data = ((tagData->payload)[i / 2] >> 4) & 0x0f;
+				m_block_datas[i] = data;
+			}
+		}
 
 		return true;
 	}

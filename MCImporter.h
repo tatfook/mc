@@ -35,12 +35,12 @@ public:
 public:
 	World m_world;
 	std::unique_ptr<WorldCache> m_world_cache;
-	//mc::WorldCache* p_world_cache;
 	void initOffsetRegionPos();
 	void TranslateParacraftChunkPos(int &chunkX,int &chunkZ);
 	void TranslateMCChunkPos(int &chunkX, int &chunkZ);
 	void TranslateMCBlockPos(int &bx, int &bz);
 	int offsetRegionX;
+	int offsetRegionY;
 	int offsetRegionZ;
 	int offsetChunkX;
 	int offsetChunkZ;

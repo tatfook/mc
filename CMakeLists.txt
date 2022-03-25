@@ -4,7 +4,7 @@
 # Desc: minecraft real time file importer
 # Note: 
 
-set(ISOLATED_BUILD TRUE)
+#set(ISOLATED_BUILD TRUE)
 
 #SET(NPL_RUNTIME_DEV TRUE)
 set(NPL_RUNTIME_ROOT ${PROJECT_SOURCE_DIR})

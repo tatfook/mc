@@ -5,7 +5,9 @@
 #include <fstream>
 #include "INPLRuntimeState.h"
 #include "NPLInterface.hpp"
+#include "mc/block.h"
 #include "mc/cache.h"
+#include "mc/schematics.h"
 #include "MCblock.h"
 
 using namespace ParaEngine;
@@ -38,14 +40,11 @@ extern "C" {
 	CORE_EXPORT_DECL void GetRegionOffset(int &offsetRegionX, int &offsetRegionZ);
 	CORE_EXPORT_DECL bool GetSpawnPosition(int &spawnX, int &spawnY, int &spawnZ);
 
-	CORE_EXPORT_DECL bool LoadSchematics(const std::string& filepath);
 #ifdef __cplusplus
 }   /* extern "C" */
 #endif
 
 HINSTANCE Instance = NULL;
-
-
 
 ClassDescriptor* MCImporter_GetClassDesc();
 typedef ClassDescriptor* (*GetClassDescMethod)();
@@ -150,6 +149,7 @@ void __attribute__ ((constructor)) DllMain()
 MCImporter::MCImporter()
 {
 	MCBlock::StaticInit();
+	block::StaticInit();
 }
 
 MCImporter::~MCImporter()
@@ -181,7 +181,6 @@ bool MCImporter::LoadWorld( const std::string& sFolderName )
 	if(m_world.load(sFolderName))
 	{
 		m_world_cache = std::unique_ptr<mc_map::WorldCache>(new mc_map::WorldCache(m_world));
-		//p_world_cache = new mc_map::WorldCache(m_world);
 		return true;
 	}
 	return false;
@@ -233,11 +232,9 @@ void MCImporter::initOffsetRegionPos()
 	int originalParaCraftRegionZ = 37;
 	int originalMCRegionX = 0;
 	int originalMCRegionZ = 0;
-	m_world.GetOriginalRegionPos(&originalMCRegionX, &originalMCRegionZ);
+	m_world.GetOriginalRegionPos(originalMCRegionX, originalMCRegionZ);
 	offsetRegionX = originalMCRegionX - originalParaCraftRegionX;
 	offsetRegionZ = originalMCRegionZ - originalParaCraftRegionZ;
-	/*offsetRegionX = -38;
-	offsetRegionZ = -39;*/
 }
 
 void MCImporter::TranslateParacraftChunkPos(int &chunkX, int &chunkZ)
@@ -256,8 +253,6 @@ void MCImporter::TranslateParacraftChunkPos(int &chunkX, int &chunkZ)
 
 void MCImporter::TranslateMCChunkPos(int &chunkX, int &chunkZ)
 {
-	/*int offsetRegionX = -39;
-	int offsetRegionZ = -38;*/
 	int x = chunkX;
 	int localX = x % 32 < 0 ? x % 32 + 32 : x % 32;
 	int MCRegionX = x >> 5;
@@ -297,12 +292,12 @@ void MCImporter::TranslateMCBlockPos(int &bx, int &bz)
 bool GetSpawnPosition(int &spawnX, int &spawnY, int &spawnZ)
 {
 	MCImporter& mc_importer = MCImporter::CreateGetSingleton();
-	if (mc_importer.m_world.GetSpawnPosition(spawnX, spawnY, spawnZ))
-	{
-		mc_importer.TranslateMCBlockPos(spawnX, spawnZ);
-		return true;
-	}
-	return false;
+	spawnX = mc_importer.m_world.GetSpawnX();
+	spawnY = mc_importer.m_world.GetSpawnY();
+	spawnZ = mc_importer.m_world.GetSpawnZ();
+	mc_importer.TranslateMCBlockPos(spawnX, spawnZ);
+	spawnY += mc_importer.m_world.GetOffsetY();
+	return true;
 }
 
 /*
@@ -587,7 +582,6 @@ bool LoadMCWorld(const std::string& sFolderName)
 		if (mc_importer.m_world.load(sFolderName))
 		{
 			mc_importer.m_world_cache = std::unique_ptr<mc_map::WorldCache>(new mc_map::WorldCache(mc_importer.m_world));
-			//mc_importer.p_world_cache = new mc_map::WorldCache(mc_importer.m_world);
 			mc_importer.initOffsetRegionPos();
 			return true;
 		}
@@ -610,8 +604,8 @@ bool GetRegionBlocks(int regionX, int regionZ, std::vector<int> *blocks)
 
 	auto region_chunks = region->getContainingChunks();
 
-	uint16_t min_y = MCImporter::min_y;
-	uint16_t max_y = MCImporter::max_y;
+	uint16_t min_y = MCImporter::min_y + mc_importer.m_world.GetOffsetY();
+	uint16_t max_y = MCImporter::max_y + mc_importer.m_world.GetOffsetY();
 
 	// go through all chunks in the region
 	for (auto chunk_it = region_chunks.begin(); chunk_it != region_chunks.end(); ++chunk_it)
@@ -667,8 +661,8 @@ bool GetChunkBlocks(int chunkX, int chunkZ, std::vector<int> *blocks)
 	//LoadMCWorld("F:/game/Minecraft1.8.8/.minecraft/saves/test");
 	MCImporter& mc_importer = MCImporter::CreateGetSingleton();
 
-	uint16_t min_y = MCImporter::min_y;
-	uint16_t max_y = MCImporter::max_y;
+	uint16_t min_y = MCImporter::min_y + mc_importer.m_world.GetOffsetY();
+	uint16_t max_y = MCImporter::max_y + mc_importer.m_world.GetOffsetY();
 
 	int mcChunkX = chunkX;
 	int mcChunkZ = chunkZ;
@@ -726,8 +720,30 @@ bool GetChunkBlocks(int chunkX, int chunkZ, std::vector<int> *blocks)
 	return true;
 }
 
-bool LoadSchematics(const std::string& filepath)
+bool GetSchematicsBlocks(const std::string& filepath, std::vector<uint16_t>* blocks, int& width, int& height, int& length)
 {
+	Schematics schem;
+	if (!schem.Load(filepath)) return false;
+	width = schem.GetWidth();
+	height = schem.GetHeight();
+	length = schem.GetLength();
+	int size = width * height * length * 3;
+	int count = 0;
+	for (int y = 0; y < height; y++) {
+		for (int z = 0; z < length; z++) {
+			for (int x = 0; x < width; x++) {
+				count++;
+				uint16_t id = schem.GetBlockId(x, y, z);
+				uint16_t data = schem.GetBlockData(x, y, z);
+				uint16_t state = 0;
+				uint16_t side = 0;
+				MCBlock::TranslateMCBlock(id, data, state, side);
+				blocks->push_back(id);
+				blocks->push_back(data);
+				blocks->push_back(side);
+			}
+		}
+	}
 	return true;
 }
 
@@ -1040,14 +1056,49 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 		{
 			const std::string& filepath = tabMsg["filepath"];
 			const std::string& sCallback = tabMsg["callback"];
+			std::vector<uint16_t> blocks;
+			int width = 0, height = 0, length = 0, blockCount = 0;
 			NPLInterface::NPLObjectProxy msg;
 			msg["cmd"] = sCmd;
-			msg["succeed"] = LoadSchematics(filepath);
+
+			if (GetSchematicsBlocks(filepath, &blocks, width, height, length)) {
+				msg["succeed"] = true;
+				NPLInterface::NPLObjectProxy idTable, dataTable;
+				for (vector<uint16_t>::iterator iter = blocks.begin(); iter != blocks.end(); iter++) {
+					blockCount++;
+					idTable[blockCount] = (double)(*iter++);
+					dataTable[blockCount] = (double)(*iter++);
+				}
+				msg["id"] = idTable;
+				msg["data"] = dataTable;
+				msg["count"] = (double)blockCount;
+			}
+			else {
+				msg["succeed"] = false;
+			}
+
+			msg["width"] = (double)width;
+			msg["height"] = (double)height;
+			msg["length"] = (double)length;
 
 			std::string output;
 			NPLInterface::NPLHelper::NPLTableToString("msg", msg, output);
 			pState->call(sCallback.c_str(), output.c_str(), (int)output.size());
-
+		}
+		else if (sCmd == "AddMineCraftBlock") {
+			int id = (int)((double)tabMsg["id"]);
+			int data = (int)((double)tabMsg["data"]);
+			std::string name = tabMsg["name"];
+			block::AddMineCraftBlock(id, data, name);
+		}
+		else if (sCmd == "AddTranslateRule") {
+			int mc_id = (int)((double)tabMsg["mc_id"]);
+			int mc_data = (int)((double)tabMsg["mc_data"]);
+			int mc_state = (int)((double)tabMsg["mc_state"]);
+			int pc_id = (int)((double)tabMsg["pc_id"]);
+			int pc_data = (int)((double)tabMsg["pc_data"]);
+			int pc_side = (int)((double)tabMsg["pc_side"]);
+			MCBlock::AddBlockInfoToMap(mc_id, mc_data, pc_id, pc_data, mc_state, pc_side);
 		}
 	}
 }

@@ -142,6 +142,16 @@ namespace mc_map {
 		}
 		return NULL;
 	}
+
+	int Chunk::getMinSectionIndex()
+	{
+		int index = 0;
+		for (std::vector<Section*>::iterator it = m_sections.begin(); it != m_sections.end(); it++) {
+			if ((*it)->GetY() < index) index = (*it)->GetY();
+		}
+		return index;
+	}
+
 	bool Chunk::hasSection(int y) {
 		return getSection(y) != NULL;
 	}

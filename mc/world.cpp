@@ -34,6 +34,10 @@ namespace mc_map {
 
 	World::World()
 		: rotation(0) {
+		m_spawn_x = 0;
+		m_spawn_y = 0;
+		m_spawn_z = 0;
+		m_data_version = 0;
 	}
 
 	World::~World() {
@@ -57,9 +61,39 @@ namespace mc_map {
 		else {
 			return readRegions(region_dir.string());
 		}
+
 		return false;
 	}
 
+	bool World::readLevel()
+	{
+		std::string level_dat_dir = worldpath + "/level.dat";
+		if (!fs::exists(level_dat_dir)) {
+			std::cerr << "Error: level.dat file " << level_dat_dir << " does not exists!" << std::endl;
+			return false;
+		}
+		nbt::NBTFile nbt;
+		nbt.readNBT(level_dat_dir.c_str());
+		nbt::TagCompound* data = nbt.findTag<nbt::TagCompound>("Data", nbt::TAG_COMPOUND);
+		if (data == NULL) {
+			std::cerr << "Warning: Corrupt level.dat (No data tag)!" << std::endl;
+			return false;
+		}
+
+		nbt::TagInt* xpos = data->findTag<nbt::TagInt>("SpawnX", nbt::TAG_INT);
+		nbt::TagInt* ypos = data->findTag<nbt::TagInt>("SpawnY", nbt::TAG_INT);
+		nbt::TagInt* zpos = data->findTag<nbt::TagInt>("SpawnZ", nbt::TAG_INT);
+		if (xpos == NULL || ypos == NULL || zpos == NULL) return false;
+
+		m_spawn_x = xpos->payload;
+		m_spawn_y = ypos->payload;
+		m_spawn_z = zpos->payload;
+
+		nbt::TagInt* tagDataVersion = data->findTag<nbt::TagInt>("DataVersion", nbt::TAG_INT);
+		if (tagDataVersion != NULL) m_data_version = tagDataVersion->payload;
+
+		return true;
+	}
 	/**
 	 * Scans the region directory for available Anvil region files.
 	 */
@@ -97,11 +131,17 @@ namespace mc_map {
 		return available_regions.size();
 	}
 
-	void World::GetOriginalRegionPos(int* originalRegionX, int* originalRegionZ)
+	int World::GetOffsetY() const {
+		if (m_data_version >= 2975) return -4 * 16;
+
+		return 0;
+	}
+
+	void World::GetOriginalRegionPos(int& originalRegionX, int& originalRegionZ)
 	{
 		auto regionPos = available_regions.begin();
-		*originalRegionX = regionPos->x;
-		*originalRegionZ = regionPos->z;
+		originalRegionX = regionPos->x;
+		originalRegionZ = regionPos->z;
 	}
 
 	bool World::hasRegion(const RegionPos& pos) const {
@@ -123,36 +163,4 @@ namespace mc_map {
 		region = RegionFile(it->second, rotation);
 		return true;
 	}
-
-	// Get the mc world spawn position
-	bool World::GetSpawnPosition(int& spawnX, int& spawnY, int& spawnZ)
-	{
-		std::string level_dat_dir = worldpath + "/level.dat";
-		if (!fs::exists(level_dat_dir)) {
-			std::cerr << "Error: level.dat file " << level_dat_dir << " does not exists!" << std::endl;
-			return false;
-		}
-		else {
-			nbt::NBTFile nbt;
-			nbt.readNBT(level_dat_dir.c_str());
-			nbt::TagCompound* data = nbt.findTag<nbt::TagCompound>("Data", nbt::TAG_COMPOUND);
-			if (data == NULL) {
-				std::cerr << "Warning: Corrupt level.dat (No data tag)!" << std::endl;
-				return false;
-			}
-
-			nbt::TagInt* xpos = data->findTag<nbt::TagInt>("SpawnX", nbt::TAG_INT);
-			nbt::TagInt* ypos = data->findTag<nbt::TagInt>("SpawnY", nbt::TAG_INT);
-			nbt::TagInt* zpos = data->findTag<nbt::TagInt>("SpawnZ", nbt::TAG_INT);
-			if (xpos && ypos && zpos)
-			{
-				spawnX = xpos->payload;
-				spawnY = ypos->payload;
-				spawnZ = zpos->payload;
-				return true;
-			}
-		}
-		return false;
-	}
-
 }

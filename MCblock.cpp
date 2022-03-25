@@ -23,17 +23,13 @@ void MCBlock::AddBlockInfoToMap(uint16_t block_id, uint16_t data, uint16_t pe_bl
 	info->pe_block_id = pe_block_id;
 	info->pe_data = pe_data;
 	info->pe_side = pe_side;
-	//MCBlockMaps.insert()
-	/*char s[16];
-	sprintf(s,"%d,%d,%d", block_id, data, sec_block_id);*/
-	//std::string block_tag(s);
+	
 	uint32_t id_32 = block_id;
 	id_32 = id_32 << 16;
 	uint32_t data_32 = data;
 	data_32 = data_32 << 8;
 	uint32_t state_32 = state;
 	uint32_t block_tag = id_32 + data_32 + state_32;
-	//uint32_t block_tag = (uint32_t)block_id << 6 + data << 3 + state;
 	MCBlockMaps[block_tag] = info;
 }
 

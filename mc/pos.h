@@ -37,7 +37,7 @@ namespace mc_map {
 
 	class RegionPos {
 	public:
-		int x, z;
+		int x, y, z;
 
 		RegionPos();
 		RegionPos(int x, int z);
@@ -96,7 +96,9 @@ namespace mc_map {
 
 		bool operator<(const BlockPos& other) const;
 
-		LocalBlockPos BlockPos::toLocalPos() const;
+		LocalBlockPos toLocalPos() const;
+		ChunkPos toChunkPos() const;
+		RegionPos toRegionPos() const;
 	};
 
 	extern const BlockPos DIR_NORTH, DIR_SOUTH, DIR_EAST, DIR_WEST, DIR_TOP, DIR_BOTTOM;

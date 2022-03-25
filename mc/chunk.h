@@ -51,6 +51,7 @@ namespace mc_map {
 
 		bool hasSection(int y);
 		Section* Chunk::getSection(int y);
+		int getMinSectionIndex();
 		uint16_t getBlockID(const LocalBlockPos& pos);
 		uint8_t getBlockData(const LocalBlockPos& pos);
 

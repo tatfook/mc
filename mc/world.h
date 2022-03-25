@@ -56,11 +56,22 @@ namespace mc_map {
 		std::unordered_map<RegionPos, std::string, hash_function> region_files;
 
 		bool readRegions(const std::string& path);
+		bool readLevel();
+
+		int m_spawn_x;
+		int m_spawn_y;
+		int m_spawn_z;
+		int m_data_version;
 	public:
 		World();
 		~World();
 
 		bool load(const std::string& dir, int rotation = 0);
+
+		int GetSpawnX() const { return m_spawn_x; }
+		int GetSpawnY() const { return m_spawn_y; }
+		int GetSpawnZ() const { return m_spawn_z; }
+		int GetOffsetY() const;
 
 		int getRegionCount() const;
 
@@ -69,7 +80,7 @@ namespace mc_map {
 
 		bool getRegion(const RegionPos& pos, RegionFile& region) const;
 
-		void GetOriginalRegionPos(int* originalRegionX, int* originalRegionZ);
+		void GetOriginalRegionPos(int& originalRegionX, int& originalRegionZ);
 
 		bool GetSpawnPosition(int& spawnX, int& spawnY, int& spawnZ);
 

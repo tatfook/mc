@@ -191,12 +191,29 @@ namespace mc_map {
 	}
 
 	LocalBlockPos BlockPos::toLocalPos() const {
-
 		int local_x = x % 16;
 		local_x = local_x < 0 ? local_x + 16 : local_x;
 		int local_z = z % 16;
 		local_z = local_z < 0 ? local_z + 16 : local_z;
 		return LocalBlockPos(local_x, local_z, y);
+	}
+
+	ChunkPos BlockPos::toChunkPos() const {
+		int ChunkX = 0, ChunkZ = 0;
+		if (x < 0)
+			ChunkX = (x - 15) / 16;
+		else
+			ChunkX = x >> 4;
+		if (z < 0)
+			ChunkZ = (z - 15) / 16;
+		else
+			ChunkZ = z >> 4;
+		return ChunkPos(ChunkX, ChunkZ);
+	}
+
+	RegionPos BlockPos::toRegionPos() const {
+		ChunkPos chunkPos = toChunkPos();
+		return RegionPos(chunkPos.x >> 5, chunkPos.z >> 5);
 	}
 
 	extern const mc_map::BlockPos DIR_NORTH(0, -1, 0);
