@@ -22,8 +22,8 @@
 #include "MCblock.h"
 
 namespace mc_map {
-	WorldCache::WorldCache(const World& world)
-		: world(world) {
+	WorldCache::WorldCache(const World* world)
+		: m_world(world) {
 		for (int i = 0; i < RSIZE; i++) {
 			regioncache[i].used = false;
 		}
@@ -58,7 +58,7 @@ namespace mc_map {
 		// if not try to load the region
 
 		// region does not exist, region in cache was not modified
-		if (!world.getRegion(pos, entry.value))
+		if (!m_world->getRegion(pos, entry.value))
 			return NULL;
 
 		if (!entry.value.loadAll()) {
@@ -123,7 +123,7 @@ namespace mc_map {
 	{
 		ChunkPos chunkpos(blockpos);
 		RegionPos& regionpos = chunkpos.getRegion();
-		if (world.hasRegion(regionpos))
+		if (m_world->hasRegion(regionpos))
 		{
 			RegionFile* region = getRegion(regionpos);
 			if (region)
@@ -146,7 +146,7 @@ namespace mc_map {
 	{
 		ChunkPos chunkpos(blockpos);
 		RegionPos& regionpos = chunkpos.getRegion();
-		if (world.hasRegion(regionpos))
+		if (m_world->hasRegion(regionpos))
 		{
 			RegionFile* region = getRegion(regionpos);
 			if (region)
@@ -167,7 +167,7 @@ namespace mc_map {
 	uint16_t WorldCache::getBlockID(BlockPos& blockpos) {
 		ChunkPos chunkpos(blockpos);
 		RegionPos& regionpos = chunkpos.getRegion();
-		if (world.hasRegion(regionpos))
+		if (m_world->hasRegion(regionpos))
 		{
 			RegionFile* region = getRegion(regionpos);
 			if (region)

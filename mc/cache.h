@@ -94,7 +94,7 @@ namespace mc_map {
 	 */
 	class WorldCache {
 	private:
-		const World& world;
+		const World* m_world;
 
 		CacheEntry<RegionPos, RegionFile> regioncache[RSIZE];
 		CacheEntry<ChunkPos, Chunk> chunkcache[CSIZE];
@@ -106,7 +106,7 @@ namespace mc_map {
 		int getChunkCacheIndex(const ChunkPos& pos);
 
 	public:
-		WorldCache(const World& world);
+		WorldCache(const World* world);
 
 		RegionFile* getRegion(const RegionPos& pos);
 		Chunk* getChunk(const ChunkPos& pos);

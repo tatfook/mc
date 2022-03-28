@@ -54,15 +54,17 @@ namespace mc_map {
 		fs::path region_dir = world_dir / "region";
 		if (!fs::exists(world_dir)) {
 			std::cerr << "Error: World directory " << world_dir << " does not exists!" << std::endl;
+			return false;
 		}
 		else if (!fs::exists(region_dir)) {
 			std::cerr << "Error: Region directory " << region_dir << " does not exists!" << std::endl;
+			return false;
 		}
 		else {
-			return readRegions(region_dir.string());
+			if (!readRegions(region_dir.string())) return false;
 		}
 
-		return false;
+		return readLevel();
 	}
 
 	bool World::readLevel()
