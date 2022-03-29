@@ -1,4 +1,5 @@
 
 <blocks>
 	<block mc_name="minecraft:air" mc_id="0" mc_data="0" mc_state="0" pc_id="0" pc_data="0" pc_side="0"></block>
+	<block mc_name="minecraft:copper_ore" mc_id="0" mc_data="0" mc_state="0" pc_id="18" pc_data="0" pc_side="0"></block>
 </blocks>

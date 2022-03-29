@@ -6,22 +6,70 @@
 namespace mc_map {
 	namespace block {
 
-		static std::set<std::string> s_not_exist_block_name_set;
-
-		static std::map<std::string, uint16_t> s_block_name_id_map = {};
-		static std::map<std::string, int8_t> s_block_name_data_map = {};
-		static std::map<std::string, std::string> s_block_id_data_to_name_map = {};
+		static std::set<std::string> s_mc_not_exist_block_name_set;
+		static std::map<std::string, uint16_t> s_block_name_mc_id_map = {};
+		static std::map<std::string, uint8_t> s_block_name_mc_data_map = {};
+		static std::map<std::string, std::string> s_block_mc_id_data_to_name_map = { {"0:0", "minecraft:air"} };
 		
+		static std::set<std::string> s_pc_not_exist_block_name_set;
+		static std::map<std::string, uint16_t> s_block_name_pc_id_map = {};
+		static std::map<std::string, uint8_t> s_block_name_pc_data_map = {};
+		static std::map<std::string, std::string> s_block_pc_id_data_to_name_map = { {"0:0", "minecraft:air"} };
+
 		static bool s_solid_block_map[512];
+
+		void AddParaCraftBlock(int id, int data, std::string name)
+		{
+			s_block_name_pc_id_map[name] = id;
+			s_block_name_pc_data_map[name] = data;
+
+			if (id != 0) {
+				std::string id_data = std::to_string(id) + ":" + std::to_string(data);
+				s_block_pc_id_data_to_name_map[id_data] = name;
+			}
+		}
+
+		int16_t GetParaCraftBlockIdByMineCraftName(std::string name)
+		{
+			if (s_block_name_pc_id_map.find(name) != s_block_name_pc_id_map.end()) {
+				return s_block_name_pc_id_map.at(name);
+			}
+
+			s_pc_not_exist_block_name_set.insert(name);
+			return 0;
+		}
+
+		uint8_t GetParaCraftBlockDataByMineCraftName(std::string name)
+		{
+			if (s_block_name_pc_data_map.find(name) != s_block_name_pc_data_map.end()) {
+				return s_block_name_pc_data_map.at(name);
+			}
+			return 0;
+		}
+
+		bool MineCraftToParaCraft(uint16_t& block_id, uint16_t& block_data)
+		{
+			std::string id_data = std::to_string(block_id) + ":" + std::to_string(block_data);
+			if (s_block_mc_id_data_to_name_map.find(id_data) != s_block_mc_id_data_to_name_map.end()) {
+				std::string mc_name = s_block_mc_id_data_to_name_map.at(id_data);
+				if (s_block_name_pc_id_map.find(mc_name) != s_block_name_pc_id_map.end()) {
+					block_id = GetParaCraftBlockIdByMineCraftName(mc_name);
+					block_data = GetParaCraftBlockDataByMineCraftName(mc_name);
+					return true;
+				}
+			}
+			return false;
+		}
 
 		void AddMineCraftBlock(int id, int data, std::string name)
 		{
-			s_block_name_id_map[name] = id;
-			s_block_name_data_map[name] = data;
+			s_block_name_mc_id_map[name] = id;
+			s_block_name_mc_data_map[name] = data;
 
-			std::string id_data;
-			id_data = id_data + std::to_string(id) + ";" + std::to_string(data);
-			s_block_id_data_to_name_map[id_data] = name;
+			if (id != 0) {
+				std::string id_data = std::to_string(id) + ":" + std::to_string(data);
+				s_block_mc_id_data_to_name_map[id_data] = name;
+			}
 		}
 
 		bool IsStairBlock(uint16_t block_id)
@@ -35,16 +83,16 @@ namespace mc_map {
 
 		std::set<std::string>& GetNotExistBlockNameSet()
 		{
-			return s_not_exist_block_name_set;
+			return s_mc_not_exist_block_name_set;
 		}
 
 		int16_t GetBlockIdByName(std::string name)
 		{
-			if (s_block_name_id_map.find(name) != s_block_name_id_map.end()) {
-				return s_block_name_id_map.at(name);
+			if (s_block_name_mc_id_map.find(name) != s_block_name_mc_id_map.end()) {
+				return s_block_name_mc_id_map.at(name);
 			}
 			
-			s_not_exist_block_name_set.insert(name);
+			s_mc_not_exist_block_name_set.insert(name);
 
 			char Msg[1024];
 			snprintf(Msg, 1000, "MineCraft Block Not Exist!!! Name: %s\n", name.c_str());
@@ -53,10 +101,10 @@ namespace mc_map {
 			return 0;
 		}
 
-		int8_t GetBlockDataByName(std::string name)
+		uint8_t GetBlockDataByName(std::string name)
 		{
-			if (s_block_name_data_map.find(name) != s_block_name_data_map.end()) {
-				return s_block_name_data_map.at(name);
+			if (s_block_name_mc_data_map.find(name) != s_block_name_mc_data_map.end()) {
+				return s_block_name_mc_data_map.at(name);
 			}
 			return 0;
 		}
@@ -86,6 +134,7 @@ namespace mc_map {
 			AddMineCraftBlock(5, 3, "minecraft:jungle_wood_plank");
 			AddMineCraftBlock(5, 4, "minecraft:acacia_wood_plank");
 			AddMineCraftBlock(5, 5, "minecraft:dark_oak_wood_plank");
+			AddMineCraftBlock(5, 5, "minecraft:dark_oak_planks");
 			AddMineCraftBlock(6, 0, "minecraft:oak_sapling");
 			AddMineCraftBlock(6, 1, "minecraft:spruce_sapling");
 			AddMineCraftBlock(6, 2, "minecraft:birch_sapling");

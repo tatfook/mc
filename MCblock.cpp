@@ -2,6 +2,7 @@
 #include "NPLInterface.hpp"
 
 #include "MCBlock.h"
+#include "mc/block.h"
 
 #include <iostream>
 #include <set>
@@ -22,6 +23,8 @@ std::map<uint32_t, MCBlockInfo*> MCBlockMaps;
 
 void MCBlock::AddBlockInfoToMap(uint16_t block_id, uint16_t data, uint16_t pe_block_id, uint16_t pe_data, uint16_t state, uint16_t pe_side)
 {
+	if (block_id == 0 && pe_block_id != 0) return;
+
 	MCBlockInfo* info = new MCBlockInfo;
 	info->block_id = block_id;
 	info->data = data;
@@ -1555,15 +1558,17 @@ bool MCBlock::IsStairBlock(uint16_t block_id)
 
 bool MCBlock::TranslateMCBlock(uint16_t &block_id, uint16_t &block_data, uint16_t block_state, uint16_t& block_side)
 {
+	if (mc_map::block::MineCraftToParaCraft(block_id, block_data)) return true;
+
 	uint32_t id_32 = block_id;
 	id_32 = id_32 << 16;
 	uint32_t data_32 = block_data;
 	data_32 = data_32 << 8;
 	uint32_t state_32 = block_state;
 	uint32_t block_tag = id_32 + data_32 + state_32;
+
 	if (MCBlockMaps[block_tag])
 	{
-		
 		MCBlockInfo *info = MCBlockMaps[block_tag];
 		if (info->pe_block_id == 0)
 			return false;

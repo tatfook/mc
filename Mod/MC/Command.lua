@@ -69,6 +69,11 @@ local function ImportWorld(cmd_text)
 	CreateWorldFromMCWorld(worldname, worldpath)
 end
 
+local function LoadBlockConfig(cmd_text)
+    local filepath = CmdParser.ParseString(cmd_text);
+    MC:LoadConfig(filepath);
+end
+
 function Command:Install()
     Commands["mc"] = {
         name="mc", 
@@ -79,6 +84,10 @@ function Command:Install()
         /mc import_schematics house.schem 19200 4 19200    -- 在19200 4 19200处加载
     import_world world_path
         /mc import_world D:/world
+    load_block_config                                      -- 加载方块配置 
+        /mc load_block_config blocks.xml 
+    debug                                                  -- 打印未配置的 MineCraft 方块信息
+        /mc debug
         ]] ,
         handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
             local cmd, cmd_text = CmdParser.ParseString(cmd_text);
@@ -87,6 +96,10 @@ function Command:Install()
                 ImportSchematics(cmd_text);
             elseif (cmd == "import_world") then
                 ImportWorld(cmd_text);
+            elseif (cmd == "load_block_config") then
+                LoadBlockConfig(cmd_text);
+            elseif (cmd == "debug") then
+                MC:Debug();
             end
         end,
     };

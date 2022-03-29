@@ -23,8 +23,36 @@ function MC:Call(data)
 end
 
 function MC:Init()
+	self:LoadConfig();
 end
 
+function MC:LoadConfig(filepath)
+	filepath = filepath or "Mod/MC/blocks.xml";
+	local xmlRoot = ParaXML.LuaXML_ParseFile(filepath);
+	if (type(xmlRoot) ~= "table") then return print("invalid blocks.xml") end
+	local blocks = commonlib.XPath.selectNode(xmlRoot, "/blocks");
+	if (type(blocks) ~= "table") then return print("blocks.xml format error") end
+	for _, block in ipairs(blocks) do
+		self:AddTranslateRule(block.attr);
+	end
+end
+
+function MC:AddTranslateRule(rule)
+	if (type(rule) ~= "table" or not rule.mc_name or not rule.mc_id or not rule.mc_data or not rule.pc_id or not rule.pc_data) then return end
+
+	print("AddTranslateRule:", rule.mc_name, rule.mc_id, rule.mc_data, rule.mc_state, rule.pc_id, rule.pc_data, rule.pc_side);
+    
+	self:Call({
+		cmd="AddTranslateRule",
+		mc_name = rule.mc_name,
+		mc_id = tonumber(rule.mc_id) or 0,
+		mc_data = tonumber(rule.mc_data) or 0,
+		mc_state = tonumber(rule.mc_state) or 0,
+		pc_id = tonumber(rule.pc_id) or 0,
+		pc_data = tonumber(rule.pc_data) or 0,
+		pc_side = tonumber(rule.pc_side) or 0,
+	});
+end
 
 function MC:GetCallBackPath()
 	return "Mod/MC/MC.lua";
@@ -48,12 +76,6 @@ function MC:LoadMCWorld(worldpath)
 		path = worldpath,
 	});
 
-	if(not self.isworldloaded) then
-		LOG.std(nil, "info", "MCImporterChunkGenerator", "failed to load world at path %s", src_path);
-	else
-		LOG.std(nil, "info", "MCImporterChunkGenerator", "successfully load world at path %s", src_path);
-	end
-
 	return self.__result__;
 end
 
@@ -61,6 +83,24 @@ function MC:LoadMCChunk(x, z)
 	self.__result__ = nil;
 	self:Call({cmd="GetChunkBlocks", x = x, z = z});
 	return self.__result__;
+end
+
+function MC:Debug()
+	self.__result__ = nil;
+	self:Call({cmd="Debug"});
+	if (not self.__result__) then return end 
+
+	local not_exist_blocknames, not_exist_blockids = self.__result__.not_exist_blocknames, self.__result__.not_exist_blockids;
+	print("================未配置的MineCraft方块名称=================", #not_exist_blocknames);
+	for _, blockname in ipairs(not_exist_blocknames) do print(blockname) end 
+	print("================未配置的MineCraft方块Id Data State=================", #not_exist_blockids);
+	for _, blocktag in ipairs(not_exist_blockids) do
+		local blockId = math.floor(blocktag / (256 * 256));
+		local dataAndState = blocktag % (256 * 256);
+		local blockData = math.floor(dataAndState / 256);
+		local blockState = dataAndState % 256;
+		print(blocktag, blockId, blockData, blockState);
+	end
 end
 
 MC:InitSingleton():Init();
@@ -78,6 +118,10 @@ local function activate()
 	if (cmd == "GetChunkBlocks" and msg.count) then
 		MC.__result__ = {x = msg.x, y = msg.y, z = msg.z, ids = msg.id, datas = msg.data, count = msg.count};
 	end
+	if (cmd == "Debug") then
+		MC.__result__ = {not_exist_blocknames = msg.not_exist_blocknames, not_exist_blockids = msg.not_exist_blockids};
+	end
+
 end
 
 NPL.this(activate);
@@ -88,6 +132,7 @@ NPL.this(activate);
 -- MC:LoadSchematics("D:/mcworld/schem/materials-alpha.schematic");
 -- /mc import_schematics D:/mcworld/schem/gracefieldhouse.schem
 -- /mc import_world D:/mcworld/HG
+-- /mc load_block_config Mod/MC/blocks.xml
 --[[
 -- mc_name minecraft 方块名称
 -- mc_id  minecraft 方块ID
@@ -100,3 +145,10 @@ NPL.this(activate);
 	<block mc_name="minecraft:air" mc_id="0" mc_data="0" mc_state="0" pc_id="0" pc_data="0" pc_side="0"></block>
 </blocks>
 ]]
+
+
+-- >cmake -A x64 -S ./ -B ./build_x64
+-- > devenv ./build_x64/MCImporter.sln /Build "Release|x64"
+
+-- > cmake -A win32 -S ./ -B ./build_win32
+-- > devenv ./build_win32/MCImporter.sln /Build "Release|win32"

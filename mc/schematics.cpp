@@ -29,6 +29,7 @@ namespace mc_map {
 		uint32_t size = m_width * m_height * m_length;
 		m_block_ids.resize(size);
 		m_block_datas.resize(size);
+		m_block_name_indexs.resize(size);
 
 		nbt::TagInt* tagDataVersion = root.findTag<nbt::TagInt>("DataVersion", nbt::TAG_INT);
 		int dataVersion = 0;
@@ -42,17 +43,20 @@ namespace mc_map {
 			nbt::TagByteArray* tagBlockData = root.findTag<nbt::TagByteArray>("BlockData", nbt::TAG_BYTE_ARRAY);
 			if (tagPalette == NULL || tagPaletteMax == NULL || tagBlockData == NULL) return false;
 			std::vector<std::string> blockNames(tagPaletteMax->payload);
+			m_block_names.resize(tagPaletteMax->payload);
 			std::map<std::string, nbt::NBTTag*> palette = tagPalette->payload;
 			for (std::map<std::string, nbt::NBTTag*>::iterator it = palette.begin(); it != palette.end(); it++) {
 				std::string name = it->first;
 				int index = ((nbt::TagInt*)(it->second))->payload;
 				blockNames[index] = name.substr(0, name.find_first_of('['));
+				m_block_names[index] = name.substr(0, name.find_first_of('['));
 			}
 			std::vector<int8_t>& blockIndexs = tagBlockData->payload;
 			for (int i = 0; i < size; i++) {
 				int index = blockIndexs[i];
 				m_block_ids[i] = block::GetBlockIdByName(blockNames[index]);
 				m_block_datas[i] = block::GetBlockDataByName(blockNames[index]);
+				m_block_name_indexs[i] = index;
 			}
 		}
 		else if (tagMaterials && tagMaterials->payload == "Alpha") {
@@ -82,6 +86,30 @@ namespace mc_map {
 			}
 		}
 
+		return true;
+	}
+
+	std::string Schematics::GetBlockName(int x, int y, int z) {
+		uint32_t index = GetBlockIndex(x, y, z);
+		if (index >= m_block_name_indexs.size()) return "";
+		index = m_block_name_indexs[index];
+		if (index >= m_block_names.size()) return "";
+		return m_block_names[index];
+	}
+
+	bool Schematics::GetParaCraftBlockIdAndData(int x, int y, int z, uint16_t& block_id, uint16_t& block_data)
+	{
+		std::string mc_name = GetBlockName(x, y, z);
+		if (mc_name.empty()) return false;
+		
+		block_id = 0;
+		block_data = 0;
+		
+		if (mc_name == "minecraft:air") return true;
+
+		block_id = block::GetParaCraftBlockIdByMineCraftName(mc_name);
+		if (block_id == 0) return false;
+		block_data = block::GetParaCraftBlockDataByMineCraftName(mc_name);
 		return true;
 	}
 }

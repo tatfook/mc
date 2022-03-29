@@ -95,15 +95,24 @@ namespace mc_map {
 	Section::Section()
 	{
 		m_y = 0;
+		m_block_name_indexs.resize(4096);
 		for (int i = 0; i < 4096; i++) {
 			m_block_ids[i] = 0;
 			m_block_datas[i] = 0;
+			m_block_name_indexs[i] = 0;
 		}
 	}
 
 	void Section::PlatteToIdAndData(nbt::TagList* tagPalettes, uint16_t* platte_indexs)
 	{
 		size_t palette_size = tagPalettes->payload.size();
+		m_block_names.resize(palette_size);
+		for (int i = 0; i < palette_size; i++) {
+			nbt::TagCompound* tagBlock = (nbt::TagCompound*)tagPalettes->payload.at(i);
+			nbt::TagString* tagName = tagBlock->findTag<nbt::TagString>("Name", nbt::TAG_STRING);
+			m_block_names[i] = tagName ? tagName->payload : "";
+		}
+
 		for (int i = 0; i < 4096; i++) {
 			uint16_t palette_index = platte_indexs[i];
 			nbt::TagCompound* tagBlock = (nbt::TagCompound*)tagPalettes->payload.at(palette_index);
@@ -195,5 +204,22 @@ namespace mc_map {
 			delete[] datas;
 		}
 		return true;
+	}
+
+	std::string Section::GetBlockName(int x, int y, int z) {
+		uint32_t index = GetBlockIndex(x, y, z);
+		if (index >= m_block_name_indexs.size()) return "";
+		index = m_block_name_indexs[index];
+		if (index >= m_block_names.size()) return "";
+		return m_block_names[index];
+	}
+
+	bool Section::GetParaCraftBlockIdAndData(int x, int y, int z, uint16_t& block_id, uint16_t& block_data)
+	{
+		std::string mc_name = GetBlockName(x, y, z);
+		if (mc_name.empty()) return false;
+		block_id = block::GetParaCraftBlockIdByMineCraftName(mc_name);
+		block_data = block::GetParaCraftBlockDataByMineCraftName(mc_name);
+		return block_id != 0 || mc_name == "minecraft:air";
 	}
 }

@@ -667,13 +667,23 @@ bool GetChunkBlocks(int chunkX, int chunkZ, std::vector<int>* blocks)
 			{
 				for (int nSection = min_y / 16; nSection < (max_y / 16); ++nSection)
 				{
-					if (!mychunk->hasSection(nSection))
-						continue;
+					Section* section = mychunk->getSection(nSection);
+					if (!section) continue;
 					for (int dy = 0; dy < 16; ++dy)
 					{
 						int y = nSection * 16 + dy;
+						uint16_t block_id = 0, block_data = 0, block_side = 0;
+						if (section->GetParaCraftBlockIdAndData(x, dy, z, block_id, block_data)) {
+							blocks->push_back(x);
+							blocks->push_back(y);
+							blocks->push_back(z);
+							blocks->push_back((int)block_id);
+							blocks->push_back((int)block_data);
+							blocks->push_back((int)block_side);
+							continue;
+						}
 						mc_map::LocalBlockPos pos(x, z, y);
-						uint16_t block_id = mychunk->getBlockID(pos);
+						block_id = mychunk->getBlockID(pos);
 						if (block_id != 0)
 						{
 							uint16_t block_data = mychunk->getBlockData(pos);
@@ -683,9 +693,6 @@ bool GetChunkBlocks(int chunkX, int chunkZ, std::vector<int>* blocks)
 								block_state = getBlockState(mc_importer.m_world_cache, gpos, block_id, block_data);
 							else
 								block_state = getBlockState(mychunk, pos, block_id, block_data);
-							/*blocks->push_back(gpos.x);
-							blocks->push_back(gpos.y);
-							blocks->push_back(gpos.z);*/
 							blocks->push_back(x);
 							blocks->push_back(y);
 							blocks->push_back(z);
@@ -722,11 +729,15 @@ bool GetSchematicsBlocks(const std::string& filepath, std::vector<uint16_t>* blo
 		for (int z = 0; z < length; z++) {
 			for (int x = 0; x < width; x++) {
 				count++;
-				uint16_t id = schem.GetBlockId(x, y, z);
-				uint16_t data = schem.GetBlockData(x, y, z);
+				uint16_t id = 0; 
+				uint16_t data = 0;  
 				uint16_t state = 0;
 				uint16_t side = 0;
-				MCBlock::TranslateMCBlock(id, data, state, side);
+				if (!schem.GetParaCraftBlockIdAndData(x, y, z, id, data)) {
+					id = schem.GetBlockId(x, y, z);
+					data = schem.GetBlockData(x, y, z);
+					MCBlock::TranslateMCBlock(id, data, state, side);
+				}
 				blocks->push_back(id);
 				blocks->push_back(data);
 				blocks->push_back(side);
@@ -1082,6 +1093,7 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 		}
 		else if (sCmd == "AddTranslateRule") {
 			std::string mc_name = tabMsg["mc_name"];
+		
 			int mc_id = (int)((double)tabMsg["mc_id"]);
 			int mc_data = (int)((double)tabMsg["mc_data"]);
 			int mc_state = (int)((double)tabMsg["mc_state"]);
@@ -1089,6 +1101,7 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 			int pc_data = (int)((double)tabMsg["pc_data"]);
 			int pc_side = (int)((double)tabMsg["pc_side"]);
 			block::AddMineCraftBlock(mc_id, mc_data, mc_name);
+			block::AddParaCraftBlock(pc_id, pc_data, mc_name);
 			MCBlock::AddBlockInfoToMap(mc_id, mc_data, pc_id, pc_data, mc_state, pc_side);
 		}
 		else if (sCmd == "Debug") {

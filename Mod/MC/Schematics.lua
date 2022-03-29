@@ -6,33 +6,6 @@ local MC = NPL.load("./MC.lua");
 local Schematics = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export())
 
 function Schematics:Init()
-	self:LoadConfig();
-end
-
-function Schematics:LoadConfig(filepath)
-	filepath = filepath or "Mod/MC/blocks.xml";
-	local xmlRoot = ParaXML.LuaXML_ParseFile(filepath);
-	if (type(xmlRoot) ~= "table") then return end
-	local blocks = commonlib.XPath.selectNode(xmlRoot, "/blocks");
-	if (type(blocks) ~= "table") then return end
-	for _, block in ipairs(blocks) do
-		self:AddTranslateRule(block.attr);
-	end
-end
-
-function Schematics:AddTranslateRule(rule)
-	if (type(rule) ~= "table" or not rule.mc_name or not rule.mc_id or not rule.mc_data or not rule.pc_id or not rule.pc_data) then return end 
-	
-    MC:Call({
-		cmd="AddTranslateRule",
-		mc_name = rule.mc_name,
-		mc_id = rule.mc_id,
-		mc_data = rule.mc_data,
-		mc_state = rule.mc_state or 0,
-		pc_id = rule.pc_id,
-		pc_data = rule.pc_data,
-		pc_side = rule.pc_side or 0,
-	});
 end
 
 function Schematics:Load(filepath, sx, sy, sz)
