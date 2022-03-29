@@ -10,6 +10,7 @@
 // ParaEngine includes
 #include "PluginAPI.h"
 #include <memory>
+#include <set>
 #include "mc/world.h"
 #include "mc/cache.h"
 

@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 #include "INPLRuntimeState.h"
 #include "NPLInterface.hpp"
 #include "mc/block.h"
@@ -1089,6 +1090,25 @@ CORE_EXPORT_DECL void LibActivate(int nType, void* pVoid)
 			int pc_side = (int)((double)tabMsg["pc_side"]);
 			block::AddMineCraftBlock(mc_id, mc_data, mc_name);
 			MCBlock::AddBlockInfoToMap(mc_id, mc_data, pc_id, pc_data, mc_state, pc_side);
+		}
+		else if (sCmd == "Debug") {
+			const std::string& sCallback = tabMsg["callback"];
+			NPLInterface::NPLObjectProxy msg, names, ids;
+			
+			int index = 0;
+			std::set<std::string>& name_set = block::GetNotExistBlockNameSet();
+			for (std::set<std::string>::iterator it = name_set.begin(); it != name_set.end(); it++) names[++index] = *it;
+			
+			index = 0;
+			std::set<uint32_t>& id_set = MCBlock::GetNotExistBlockIdSet();
+			for (std::set<std::uint32_t>::iterator it = id_set.begin(); it != id_set.end(); it++) ids[++index] = (double)*it;
+
+			msg["not_exist_blocknames"] = names;
+			msg["not_exist_blockids"] = ids;
+			msg["cmd"] = sCmd;
+			std::string output;
+			NPLInterface::NPLHelper::NPLTableToString("msg", msg, output);
+			pState->call(sCallback.c_str(), output.c_str(), (int)output.size());
 		}
 	}
 }

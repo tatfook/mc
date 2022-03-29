@@ -10,3 +10,6 @@ DEBUG/
 build/ 
 .vs/
 out/
+build/
+build_x64/
+build_win32/

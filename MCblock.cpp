@@ -1,6 +1,10 @@
 #include "PluginAPI.h"
+#include "NPLInterface.hpp"
+
 #include "MCBlock.h"
 
+#include <iostream>
+#include <set>
 
 struct MCBlockInfo
 {
@@ -11,6 +15,8 @@ struct MCBlockInfo
 	uint16_t pe_data;
 	uint16_t pe_side;
 };
+
+static std::set<uint32_t> s_not_exist_blockids = {};
 
 std::map<uint32_t, MCBlockInfo*> MCBlockMaps;
 
@@ -1566,8 +1572,20 @@ bool MCBlock::TranslateMCBlock(uint16_t &block_id, uint16_t &block_data, uint16_
 		block_side = info->pe_side;
 		return true;
 	}
+
+	s_not_exist_blockids.insert(block_tag);
+
+	char Msg[1024];
+	snprintf(Msg, 1000, "TranslateMCBlock Failed!!! block_id:%d block_data:%d block_state:%d\n", block_id, block_data, block_data);
+	OUTPUT_LOG(Msg);
+
 	block_id = 0;
 	block_data = 0;
 	block_side = 0;
 	return false;
+}
+
+std::set<uint32_t>& MCBlock::GetNotExistBlockIdSet()
+{
+	return s_not_exist_blockids;
 }

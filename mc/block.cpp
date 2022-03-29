@@ -1,12 +1,17 @@
 
+#include "NPLInterface.hpp"
 #include "block.h"
-
+#include <iostream>
+#include <set>
 namespace mc_map {
 	namespace block {
+
+		static std::set<std::string> s_not_exist_block_name_set;
 
 		static std::map<std::string, uint16_t> s_block_name_id_map = {};
 		static std::map<std::string, int8_t> s_block_name_data_map = {};
 		static std::map<std::string, std::string> s_block_id_data_to_name_map = {};
+		
 		static bool s_solid_block_map[512];
 
 		void AddMineCraftBlock(int id, int data, std::string name)
@@ -28,13 +33,24 @@ namespace mc_map {
 				return false;
 		}
 
+		std::set<std::string>& GetNotExistBlockNameSet()
+		{
+			return s_not_exist_block_name_set;
+		}
+
 		int16_t GetBlockIdByName(std::string name)
 		{
 			if (s_block_name_id_map.find(name) != s_block_name_id_map.end()) {
 				return s_block_name_id_map.at(name);
 			}
-			return 0;
+			
+			s_not_exist_block_name_set.insert(name);
 
+			char Msg[1024];
+			snprintf(Msg, 1000, "MineCraft Block Not Exist!!! Name: %s\n", name.c_str());
+			OUTPUT_LOG(Msg);
+
+			return 0;
 		}
 
 		int8_t GetBlockDataByName(std::string name)
@@ -484,3 +500,5 @@ namespace mc_map {
 	}
 
 }
+
+

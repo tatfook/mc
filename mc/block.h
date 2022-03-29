@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <map>
+#include <set>
 #include <vector>
 #include <stdint.h>
 #include <string>
@@ -14,9 +15,8 @@ namespace mc_map {
 		void AddMineCraftBlock(int id, int data, std::string name);
 		int16_t GetBlockIdByName(std::string name);
 		int8_t GetBlockDataByName(std::string name);
-
+		std::set<std::string>& GetNotExistBlockNameSet();
 		bool IsStairBlock(uint16_t blockId);
 		bool IsSolidBlock(int block_id);
-
 	}
 }

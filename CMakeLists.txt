@@ -1,13 +1,13 @@
-# Author: LiPeng, LiXizhi
-# Company: ParaEngine.com
-# Date: 2015.11
-# Desc: minecraft real time file importer
-# Note: 
 
+# 是否编译成独立的APP
 #set(ISOLATED_BUILD TRUE)
+# 是否使用NPL_RUNTIME的DEV分支
+# set(NPL_RUNTIME_DEV TRUE)
+# NPL_RUNTIME的源码根目录 dev分支: Client/trunk/ParaEngineClient   cp_old分支: NPLRuntime
+project (MCImporter)
 
-#SET(NPL_RUNTIME_DEV TRUE)
 set(NPL_RUNTIME_ROOT ${PROJECT_SOURCE_DIR})
+
 if (ISOLATED_BUILD) 
     cmake_minimum_required(VERSION 3.14.5)
     set(NPL_RUNTIME_ROOT "D:/workspace/npl/NPLRuntime_cp_old/NPLRuntime")
@@ -20,22 +20,19 @@ else()
 	set(NPL_RUNTIME_ROOT "D:/workspace/npl/NPLRuntime_cp_old/NPLRuntime")
 endif()
 
+# boost 根目录
 set(BOOST_ROOT D:/ProgramData/Lib/boost_1_78_0)
+# boost 库目录
 set(BOOST_LIBRARYDIR ${BOOST_ROOT}/stage/lib)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS   ON)
-set(Boost_DEBUG on)
+set(Boost_DEBUG ON)
+set(Boost_USE_STATIC_RUNTIME ON)
 
-if (MSVC)
-    set(Boost_USE_STATIC_RUNTIME ON)
-else()
-    set(Boost_USE_STATIC_RUNTIME OFF)
-endif()
-
+message(${BOOST_ROOT})
 # Add more boost components here
 find_package(Boost 1.78 REQUIRED COMPONENTS filesystem iostreams zlib) 
 
-project (MCImporter)
 
 SET(MCImporter_SRCS
 	MCImporter.h
