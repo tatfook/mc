@@ -60,9 +60,26 @@ local function CreateWorldFromMCWorld(worldname, src_dir)
 	end
 end
 
+-- allow the user to choose which world to import. 
+local function OnClickImportMCWorldCmd()
+	NPL.load("(gl)script/ide/OpenFileDialog.lua");
+	local src_dir = CommonCtrl.OpenFileDialog.ShowOpenFolder_Win32();
+	if(src_dir and src_dir~="") then
+		src_dir = src_dir:gsub("[/\\]$", "");
+		local worldname = src_dir:match("[^/\\]+$");
+		if(worldname and src_dir) then
+			if(ParaIO.DoesFileExist(src_dir.."\\level.dat", false)) then
+				CreateWorldFromMCWorld(worldname, src_dir)
+			else
+				_guihelper.MessageBox("Directory is not a valid minecraft world directory, please select a valid folder.");
+			end
+		end
+	end
+end
+
 local function ImportWorld(cmd_text)
     local worldpath, cmd_text = CmdParser.ParseString(cmd_text);
-    if (not worldpath or worldpath == "") then return end
+    if (not worldpath or worldpath == "") then return OnClickImportMCWorldCmd() end
     worldpath = worldpath:gsub("[/\\]$", "");
 	local worldname = worldpath:match("[^/\\]+$");
     if (not worldname or worldname == "") then return end

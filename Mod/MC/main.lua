@@ -26,6 +26,7 @@ function MC:init()
 	if (ParaEngine.IsDebugging()) then NPL.load("Mod/MC/") end 
 
 	NPL.load("Mod/MC/Command.lua")
+	self:RegisterMenuItem("file", {text = L"import minecraft world...", name = "file.mcimportworld", cmd="/mc import_world", }, "file.loadworld");
 end
 
 function MC:OnLogin()
