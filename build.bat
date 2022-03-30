@@ -4,10 +4,10 @@ mkdir build
 xcopy /s /y D:\workspace\npl\NPLRuntime_cp_old\win64\bin\Mod\MC\Mod\MC\ Mod\MC\
 
 xcopy /y build_win32\Release\MCImporter.dll build\
-xcopy /y Install.md build\
+xcopy /y README.md build\
 xcopy /s /y Mod\ build\Mod\
 pushd build
-call "..\7z.exe" a MCImporter.zip Install.md MCImporter.dll Mod\
+call "..\7z.exe" a MCImporter.zip README.md MCImporter.dll Mod\
 popd
 
 xcopy /y build\MCImporter.zip D:\Paracraft\Mod\
