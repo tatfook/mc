@@ -25,8 +25,19 @@ local function FormatPath(filename, platform)
     return filename;
 end
 
+-- allow the user to choose which world to import. 
+local function OnClickImportMCSchematicsCmd()
+	NPL.load("(gl)script/ide/OpenFileDialog.lua");
+	local filepath = CommonCtrl.OpenFileDialog.ShowDialog_Win32();
+	if (not filepath or filepath == "") then return end 
+    local x, y, z = EntityManager.GetPlayer():GetBlockPos();
+    Schematics:Load(filepath, x, y, z);
+end
+
 local function ImportSchematics(cmd_text)
     local filepath, cmd_text = CmdParser.ParseString(cmd_text);
+	if (not filepath or filepath == "") then return OnClickImportMCSchematicsCmd() end 
+    
     local x, y, z, cmd_text = CmdParser.ParsePos(cmd_text);
     if (not x or not y or not z) then
         x, y, z = EntityManager.GetPlayer():GetBlockPos();
