@@ -38,7 +38,7 @@ function MC:LoadConfig(filepath)
 end
 
 function MC:AddTranslateRule(rule)
-	if (type(rule) ~= "table" or not rule.mc_name or not rule.mc_id or not rule.mc_data or not rule.pc_id or not rule.pc_data) then return end
+	if (type(rule) ~= "table" or not rule.mc_name or not rule.pc_id) then return end
 
 	print("AddTranslateRule:", rule.mc_name, rule.mc_id, rule.mc_data, rule.mc_state, rule.pc_id, rule.pc_data, rule.pc_side);
     
@@ -131,7 +131,7 @@ NPL.this(activate);
 -- MC:LoadSchematics("D:/mcworld/schem/gracefieldhouse.schem");
 -- MC:LoadSchematics("D:/mcworld/schem/materials-alpha.schematic");
 -- /mc import_schematics D:/mcworld/schem/gracefieldhouse.schem
--- /mc import_world D:/mcworld/HG
+-- /mc import_world D:/mcworld/world
 -- /mc load_block_config Mod/MC/blocks.xml
 --[[
 -- mc_name minecraft 方块名称

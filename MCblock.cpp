@@ -1580,9 +1580,9 @@ bool MCBlock::TranslateMCBlock(uint16_t &block_id, uint16_t &block_data, uint16_
 
 	s_not_exist_blockids.insert(block_tag);
 
-	char Msg[1024];
-	snprintf(Msg, 1000, "TranslateMCBlock Failed!!! block_id:%d block_data:%d block_state:%d\n", block_id, block_data, block_data);
-	OUTPUT_LOG(Msg);
+	//char Msg[1024];
+	//snprintf(Msg, 1000, "TranslateMCBlock Failed!!! block_id:%d block_data:%d block_state:%d\n", block_id, block_data, block_data);
+	//OUTPUT_LOG(Msg);
 
 	block_id = 0;
 	block_data = 0;

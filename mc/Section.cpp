@@ -115,6 +115,7 @@ namespace mc_map {
 
 		for (int i = 0; i < 4096; i++) {
 			uint16_t palette_index = platte_indexs[i];
+			m_block_name_indexs[i] = palette_index;
 			nbt::TagCompound* tagBlock = (nbt::TagCompound*)tagPalettes->payload.at(palette_index);
 			if (tagBlock == NULL) continue;
 			nbt::TagString* tagName = tagBlock->findTag<nbt::TagString>("Name", nbt::TAG_STRING);

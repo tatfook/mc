@@ -6,6 +6,7 @@
 namespace mc_map {
 	namespace block {
 
+		static std::set<std::string> s_not_exist_block_name_set;
 		static std::set<std::string> s_mc_not_exist_block_name_set;
 		static std::map<std::string, uint16_t> s_block_name_mc_id_map = {};
 		static std::map<std::string, uint8_t> s_block_name_mc_data_map = {};
@@ -83,7 +84,7 @@ namespace mc_map {
 
 		std::set<std::string>& GetNotExistBlockNameSet()
 		{
-			return s_mc_not_exist_block_name_set;
+			return s_not_exist_block_name_set;
 		}
 
 		int16_t GetBlockIdByName(std::string name)
@@ -94,9 +95,13 @@ namespace mc_map {
 			
 			s_mc_not_exist_block_name_set.insert(name);
 
-			char Msg[1024];
-			snprintf(Msg, 1000, "MineCraft Block Not Exist!!! Name: %s\n", name.c_str());
-			OUTPUT_LOG(Msg);
+			if (s_block_name_pc_id_map.find(name) == s_block_name_pc_id_map.end()) {
+				s_not_exist_block_name_set.insert(name);
+			}
+
+			//char Msg[1024];
+			//snprintf(Msg, 1000, "MineCraft Block Not Exist!!! Name: %s\n", name.c_str());
+			//OUTPUT_LOG(Msg);
 
 			return 0;
 		}
