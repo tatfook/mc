@@ -1,9 +1,9 @@
 
-# ÊÇ·ñ±àÒë³É¶ÀÁ¢µÄAPP
+# æ˜¯å¦ç¼–è¯‘æˆç‹¬ç«‹çš„APP
 #set(ISOLATED_BUILD TRUE)
-# ÊÇ·ñÊ¹ÓÃNPL_RUNTIMEµÄDEV·ÖÖ§
-# set(NPL_RUNTIME_DEV TRUE)
-# NPL_RUNTIMEµÄÔ´Âë¸ùÄ¿Â¼ dev·ÖÖ§: Client/trunk/ParaEngineClient   cp_old·ÖÖ§: NPLRuntime
+# æ˜¯å¦ä½¿ç”¨NPL_RUNTIMEçš„DEVåˆ†æ”¯
+set(NPL_RUNTIME_DEV TRUE)
+# NPL_RUNTIMEçš„æºç æ ¹ç›®å½• devåˆ†æ”¯: Client/trunk/ParaEngineClient   cp_oldåˆ†æ”¯: NPLRuntime
 project (MCImporter)
 
 set(NPL_RUNTIME_ROOT ${PROJECT_SOURCE_DIR})
@@ -15,22 +15,24 @@ else()
 endif ()
 
 if (NPL_RUNTIME_DEV)
-	set(NPL_RUNTIME_ROOT "${CLIENT_SOURCE_DIR}/trunk/ParaEngineClient")
+	set(NPL_RUNTIME_ROOT "D:/workspace/npl/NPLRuntime_win32/Client/trunk/ParaEngineClient")
 else() 
 	set(NPL_RUNTIME_ROOT "D:/workspace/npl/NPLRuntime_cp_old/NPLRuntime")
 endif()
 
-# boost ¸ùÄ¿Â¼
-set(BOOST_ROOT D:/ProgramData/Lib/boost_1_78_0)
-# boost ¿âÄ¿Â¼
+# boost æ ¹ç›®å½•
+# set(BOOST_ROOT D:/ProgramData/Lib/boost_1_78_0)
+set(BOOST_ROOT "$ENV{BOOST_ROOT}")
+# boost åº“ç›®å½•
 set(BOOST_LIBRARYDIR ${BOOST_ROOT}/stage/lib)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS   ON)
-set(Boost_DEBUG ON)
+# set(Boost_DEBUG ON)
 set(Boost_USE_STATIC_RUNTIME ON)
 
 message(${BOOST_ROOT})
 # Add more boost components here
+#.\b2 address-model=64 runtime-link=static threading=multi variant=release -sZLIB_SOURCE="D:\workspace\npl\NPLRuntime_win32\Server\trunk\zlib-1.2.3" -sZLIB_INCLUDE="D:\workspace\npl\NPLRuntime_win32\Server\trunk\zlib-1.2.3"
 find_package(Boost 1.78 REQUIRED COMPONENTS filesystem iostreams zlib) 
 
 
@@ -107,11 +109,11 @@ IF(WIN32)
 ENDIF(WIN32)
 
 
-if(MSVC AND NOT ISOLATED_BUILD)
-    ADD_CUSTOM_COMMAND(
-       TARGET MCImporter
-       POST_BUILD
-       COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTPUT_BIN_DIR}
-       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:MCImporter> ${OUTPUT_BIN_DIR}
-    )
-endif()
+# if(MSVC AND NOT ISOLATED_BUILD)
+#     ADD_CUSTOM_COMMAND(
+#        TARGET MCImporter
+#        POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTPUT_BIN_DIR}
+#        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:MCImporter> ${OUTPUT_BIN_DIR}
+#     )
+# endif()
